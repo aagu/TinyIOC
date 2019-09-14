@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<container>
+    <bean name="bean1" class="com.aagu.test.Bean1" scope="prototype">
+        <initMethod>init</initMethod>
+        <destroyMethod>destroy</destroyMethod>
+    </bean>
+    <bean name="bean2" class="com.aagu.test.Bean2">
+        <property name="bean1" ref="bean1" />
+    </bean>
+    <bean name="bean3" class="com.aagu.test.Bean3">
+        <property name="str" type="string" value="hello"/>
+        <constructor>
+            <param name="bean2" type="bean" value="bean2"/>
+        </constructor>
+    </bean>
+</container>

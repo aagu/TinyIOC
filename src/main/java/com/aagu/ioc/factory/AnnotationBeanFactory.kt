@@ -55,10 +55,12 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
                         val anno = field.getAnnotation(Value::class.java)
                         var value = anno.value
                         if (value.isNotBlank()) {
-                            val propValue = StringUtils.getValueFromRegex(value, "\\#\\{(.*)\\}")
-                            if (propValue != null) {
-                                val pValue = PropertyLoader.getProperty(propValue)
-                                if (pValue != null) value = pValue
+                            if (value.startsWith("#")) {
+                                val propValue = StringUtils.getValueFromRegex(value, "\\#\\{(.*)\\}")
+                                if (propValue != null) {
+                                    val pValue = PropertyLoader.getProperty(propValue)
+                                    if (pValue != null) value = pValue
+                                }
                             }
                             when (field.type) {
                                 Int::class.java -> {

@@ -1,11 +1,9 @@
 package com.aagu.test
 
 import com.aagu.ioc.factory.AnnotationBeanFactory
-import com.aagu.ioc.factory.XmlBeanFactory
-import com.aagu.ioc.util.StringUtils
 
 fun main() {
-//    val ioc = XmlBeanFactory("beans.xml")
+//    val ioc = XmlBeanFactory("src/main/resources/beans.xml")
     val ioc = AnnotationBeanFactory("com.aagu.test")
     ioc.init()
 //    val beanDef = GeneralBeanDefinition()
@@ -23,5 +21,7 @@ fun main() {
     println(ioc.getBean<Bean1>("bean1"))
     println(ioc.getBean(Bean2::class.java))
     println(ioc.getBean(Bean3::class.java))
+    println(ioc.getBean<Bean4>("bean4"))
+    println(ioc.getBean<Bean4>("bean5"))
     ioc.close()
 }

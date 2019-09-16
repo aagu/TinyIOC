@@ -42,7 +42,10 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
             throw DuplicateBeanDefinitionException("容器中已经存在名为 $name 的bean定义 ${this.getBeanDefinition(name)}")
         }
         beanDefinitionMap[name] = definition
-        classMap[definition.getBeanClass()!!] = name
+        if (definition.getBeanClass() != null) {
+            // 对于@Config定义的bean，只能通过beanName访问
+            classMap[definition.getBeanClass()!!] = name
+        }
     }
 
     override fun getBeanDefinition(name: String): BeanDefinition {
@@ -124,7 +127,6 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
             val origValue = pv.value
             var value: Any?
             value = when (origValue) {
-                null -> null
                 is BeanReference -> doGetBean(origValue.getBeanName())
                 else -> origValue
             }
@@ -143,14 +145,14 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
         val factory = doGetBean<Any>(definition.getFactoryBeanName()!!)
         val args = getRealValues(definition.getConstructorArgumentValues())
         val method = determineFactoryMethod(definition, args, factory.javaClass)
-        return method.invoke(factory, args)
+        return method.invoke(factory, *args)
     }
 
     private fun createInstanceByStaticFactoryMethod(definition: BeanDefinition): Any {
         val clazz = definition.getBeanClass()!!
         val args = getRealValues(definition.getConstructorArgumentValues())
         val method = determineFactoryMethod(definition, args, null)
-        return method.invoke(clazz, args)
+        return method.invoke(clazz, *args)
     }
 
     private fun createInstanceByConstructor(definition: BeanDefinition): Any {

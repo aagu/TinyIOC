@@ -7,10 +7,10 @@ import com.aagu.test.Bean2
 
 @Bean
 class Bean3() {
-    @Wire lateinit var bean2: Bean2
+//    @Wire lateinit var bean2: Bean2
     @Value("hello") lateinit var str: String
 
     override fun toString(): String {
-        return "Bean3: {bean2: $bean2, str: $str}"
+        return "Bean3: {str: $str}"
     }
 }

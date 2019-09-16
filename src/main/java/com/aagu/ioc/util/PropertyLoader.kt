@@ -8,7 +8,7 @@ object PropertyLoader {
     private val properties: Properties = Properties()
 
     init {
-        val bufferedReader = BufferedReader(FileReader("app.properties"))
+        val bufferedReader = BufferedReader(FileReader("src/main/resources/app.properties"))
         properties.load(bufferedReader)
     }
 

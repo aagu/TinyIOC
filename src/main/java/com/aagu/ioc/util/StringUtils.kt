@@ -1,7 +1,5 @@
 package com.aagu.ioc.util
 
-import java.io.File
-import java.util.*
 import java.util.regex.Pattern
 
 class StringUtils {

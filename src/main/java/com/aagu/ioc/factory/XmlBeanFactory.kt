@@ -10,7 +10,7 @@ import org.dom4j.Element
 
 
 class XmlBeanFactory(private val xmlFile: String): DefaultBeanFactory() {
-    fun init() {
+    override fun init() {
         val scanner = XmlScanner()
         scanner.addXmlFile(xmlFile)
         scanner.setFilter(object : XmlScanner.Companion.Filter{

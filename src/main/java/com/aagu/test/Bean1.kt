@@ -3,21 +3,22 @@ package com.aagu.test
 import com.aagu.ioc.annotation.Bean
 import com.aagu.ioc.annotation.DestroyMethod
 import com.aagu.ioc.annotation.InitMethod
+import com.aagu.ioc.annotation.Value
 
-@Bean
+@Bean(scope = "prototype")
 class Bean1 {
-    lateinit var text: String
+    @Value("hello world") lateinit var text: String
 
     fun doSomething() {
         println("${System.currentTimeMillis()} $this")
     }
 
-    @InitMethod
+//    @InitMethod
     fun init() {
         println("init of bean1")
     }
 
-    @DestroyMethod
+//    @DestroyMethod
     fun destroy() {
         println("destroy of bean1")
     }

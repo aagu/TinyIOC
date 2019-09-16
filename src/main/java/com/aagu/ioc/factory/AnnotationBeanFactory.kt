@@ -1,6 +1,7 @@
 package com.aagu.ioc.factory
 
 import com.aagu.ioc.annotation.*
+import com.aagu.ioc.bean.BeanDefinition
 import com.aagu.ioc.bean.BeanReference
 import com.aagu.ioc.bean.GeneralBeanDefinition
 import com.aagu.ioc.bean.PropertyValue
@@ -24,8 +25,14 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
                     beanName = clazz.simpleName
                 }
                 beanName = StringUtils.lowerCaseFirstChar(beanName)
+                val scope = atBean.scope
                 val beanDef = GeneralBeanDefinition()
                 beanDef.setBeanClass(clazz)
+                if (scope == BeanDefinition.SCOPE_PROTOTYPE) {
+                    beanDef.setScope(BeanDefinition.SCOPE_PROTOTYPE)
+                } else {
+                    beanDef.setScope(BeanDefinition.SCOPE_SINGLETON)
+                }
                 val methods = clazz.methods
                 for (method in methods) {
                     if (method.isAnnotationPresent(InitMethod::class.java)) {

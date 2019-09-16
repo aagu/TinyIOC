@@ -1,5 +1,6 @@
 package com.aagu.ioc.factory
 
+import com.aagu.ioc.bean.BeanDefinition
 import com.aagu.ioc.bean.BeanReference
 import com.aagu.ioc.bean.GeneralBeanDefinition
 import com.aagu.ioc.bean.PropertyValue
@@ -32,8 +33,10 @@ class XmlBeanFactory(private val xmlFile: String): DefaultBeanFactory() {
                 val beanDef = GeneralBeanDefinition()
                 beanDef.setBeanClass(clazz)
                 val scope = node.attributeValue("scope")
-                if (scope != null) {
-                    beanDef.setScope(scope)
+                if (scope == BeanDefinition.SCOPE_PROTOTYPE) {
+                    beanDef.setScope(BeanDefinition.SCOPE_PROTOTYPE)
+                } else {
+                    beanDef.setScope(BeanDefinition.SCOPE_SINGLETON)
                 }
                 val childNodes = node.elements()
                 val propertyList = ArrayList<PropertyValue>()

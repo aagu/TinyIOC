@@ -7,7 +7,7 @@ import com.aagu.ioc.annotation.Value
 
 @Bean(scope = "prototype")
 class Bean1 {
-    @Value("hello world") lateinit var text: String
+    @Value("#{hello}") lateinit var text: String
 
     fun doSomething() {
         println("${System.currentTimeMillis()} $this")

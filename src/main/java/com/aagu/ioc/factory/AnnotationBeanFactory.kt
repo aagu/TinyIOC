@@ -7,6 +7,7 @@ import com.aagu.ioc.bean.GeneralBeanDefinition
 import com.aagu.ioc.bean.PropertyValue
 import com.aagu.ioc.exception.IllegalBeanDefinitionException
 import com.aagu.ioc.util.PackageScanner
+import com.aagu.ioc.util.PropertyLoader
 import com.aagu.ioc.util.StringUtils
 
 class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory() {
@@ -52,8 +53,13 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
                     }
                     if (field.isAnnotationPresent(Value::class.java)) {
                         val anno = field.getAnnotation(Value::class.java)
-                        val value = anno.value
+                        var value = anno.value
                         if (value.isNotBlank()) {
+                            val propValue = StringUtils.getValueFromRegex(value, "\\#\\{(.*)\\}")
+                            if (propValue != null) {
+                                val pValue = PropertyLoader.getProperty(propValue)
+                                if (pValue != null) value = pValue
+                            }
                             when (field.type) {
                                 Int::class.java -> {
                                     propertyList.add(PropertyValue(field.name, value.toInt()))

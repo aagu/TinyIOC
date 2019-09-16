@@ -20,7 +20,7 @@
 * 标注`@Bean`的类才能被扫描
 * 使用`@InitMethod`和`@DestroyMethod`标记构造和解构函数
 * 使用`@Wire`注入依赖
-* 使用`@Value`注入值
+* 使用`@Value`注入值，包裹在"#{}"中的定义将会从`app.properties`文件读取，否则按照字面值解释
 
 ## xml方式设计约定
 * 所有的bean都定义在标签`<container></container>`中

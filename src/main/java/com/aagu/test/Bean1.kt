@@ -6,6 +6,8 @@ import com.aagu.ioc.annotation.InitMethod
 
 @Bean
 class Bean1 {
+    lateinit var text: String
+
     fun doSomething() {
         println("${System.currentTimeMillis()} $this")
     }
@@ -21,6 +23,6 @@ class Bean1 {
     }
 
     override fun toString(): String {
-        return "Bean1: {}"
+        return "Bean1: {text: $text}"
     }
 }

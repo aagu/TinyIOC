@@ -58,6 +58,20 @@ class XmlBeanFactory(private val xmlFile: String): DefaultBeanFactory() {
                                     "float" -> {
                                         propertyList.add(PropertyValue(name, value.toFloat()))
                                     }
+                                    "list" -> {
+                                        val listItems = child.elements("item")
+                                        val list = createList(value)
+                                        if (value == "beans") {
+                                            for (item in listItems) {
+                                                insertBeanList(list as ArrayList<Any?>, item)
+                                            }
+                                        } else {
+                                            for (item in listItems) {
+                                                insertList(list as ArrayList<Any?>, item, value)
+                                            }
+                                        }
+                                        propertyList.add(PropertyValue(name, list))
+                                    }
                                     else -> {
                                         propertyList.add(PropertyValue(name, value))
                                     }
@@ -84,6 +98,20 @@ class XmlBeanFactory(private val xmlFile: String): DefaultBeanFactory() {
                                     "string" -> realValue = textValue
                                     "int" -> realValue = textValue.toInt()
                                     "bean" -> realValue = BeanReference(textValue)
+                                    "list" -> {
+                                        val list = createList(textValue)
+                                        val listItems = paramNode.elements("item")
+                                        if (textValue == "beans") {
+                                            for (item in listItems) {
+                                                insertBeanList(list as ArrayList<Any?>, item)
+                                            }
+                                        } else {
+                                            for (item in listItems) {
+                                                insertList(list as ArrayList<Any?>, item, textValue)
+                                            }
+                                        }
+                                        realValue = list
+                                    }
                                 }
                                 arguments[j] = realValue
                             }
@@ -96,5 +124,26 @@ class XmlBeanFactory(private val xmlFile: String): DefaultBeanFactory() {
             }
         })
         scanner.scan()
+    }
+
+    private fun insertBeanList(list: ArrayList<Any?>, item: Element) {
+        val value = item.attributeValue("value")
+        list.add(getBean(value))
+    }
+
+    private fun insertList(list: ArrayList<Any?>, item: Element, value: String?) {
+        when (value) {
+            "string" -> list.add(item.attributeValue("value"))
+            "int" -> list.add(item.attributeValue("value").toInt())
+            else -> list.add(item.attributeValue("value") as Any?)
+        }
+    }
+
+    private fun createList(value: String?): List<Any?> {
+        return when (value) {
+            "string" -> ArrayList<String>()
+            "int" -> ArrayList<Int>()
+            else -> ArrayList()
+        }
     }
 }

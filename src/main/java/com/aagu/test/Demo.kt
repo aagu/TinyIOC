@@ -20,7 +20,7 @@ fun main() {
 //    beanDef3.setBeanClass(Bean3::class.java)
 //    beanDef3.setPropertyValues(listOf(PropertyValue("bean2", ioc.getBean("bean2"))))
 //    ioc.registerBeanDefinition("bean3", beanDef3)
-    println(ioc.getBean<Bean1>("bean1"))
+    println(ioc.getBean<Bean1>("bean11"))
     println(ioc.getBean(Bean2::class.java))
     println(ioc.getBean(Bean3::class.java))
     ioc.close()

@@ -64,9 +64,9 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
             val beanDefinition = entry.value
 
             if (beanDefinition.isSingleton() && StringUtils.isNotEmpty(beanDefinition.getDestroyMethodName())) {
-                val instance = beanMap[beanName]
+                val instance = beanMap[beanName] ?: return
                 try {
-                    val method = instance!!.javaClass.getMethod(beanDefinition.getDestroyMethodName())
+                    val method = instance.javaClass.getMethod(beanDefinition.getDestroyMethodName())
                     method.invoke(instance)
                 } catch (e: NoSuchMethodException) {
                     e.printStackTrace()

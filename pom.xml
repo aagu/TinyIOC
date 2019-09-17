@@ -18,6 +18,7 @@
             <artifactId>dom4j</artifactId>
             <version>2.1.1</version>
             <systemPath>${basedir}/lib/dom4j-2.1.1.jar</systemPath>
+            <scope>system</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

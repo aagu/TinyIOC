@@ -56,10 +56,13 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
         for (method in beanDeclareMethod) {
             val atBean = method.getAnnotation(Bean::class.java)
             val beanName = processBeanNameByMethod(atBean, method)
+            val beanClazz = method.returnType
             val beanDef = GeneralBeanDefinition()
             processScope(atBean, beanDef)
             beanDef.setFactoryBeanName(configName)
             beanDef.setFactoryMethodName(method.name)
+            processInitAndDestroy(beanClazz, beanDef)
+            processProperties(beanClazz, beanDef)
             registerBeanDefinition(beanName, beanDef)
         }
     }
@@ -108,19 +111,13 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
             if (field.isAnnotationPresent(Wire::class.java)) {
                 val targetClass = field.type
                 if (targetClass.`package`.name != packageName) continue
-                propertyList.add(PropertyValue(field.name, BeanReference(targetClass.simpleName)))
+                propertyList.add(PropertyValue(field.name, BeanReference(StringUtils.lowerCaseFirstChar(targetClass.simpleName))))
             }
             if (field.isAnnotationPresent(Value::class.java)) {
                 val anno = field.getAnnotation(Value::class.java)
                 var value = anno.value
                 if (value.isNotBlank()) {
                     if (value.startsWith("#")) {
-//                        val propValue = StringUtils.getValueFromRegex(value, "\\#\\{(.*)\\}(:\\w+)?")
-//                        if (propValue != null) {
-//                            val pValue = PropertyLoader.getProperty(propValue)
-//                            if (pValue != null) value = pValue
-//                            else throw PropertyNotFoundException("找不到prop: $propValue 的定义")
-//                        }
                         value = handlePropValue(value)
                     }
                     when (field.type) {

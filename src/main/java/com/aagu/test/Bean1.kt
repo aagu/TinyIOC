@@ -8,7 +8,7 @@ import kotlin.properties.Delegates
 
 @Bean(scope = "prototype")
 class Bean1 {
-    @Value("#{hello}") var text: Int = 0;
+    @Value("#{hello}:147") var text: Int = 0;
 
     fun doSomething() {
         println("${System.currentTimeMillis()} $this")

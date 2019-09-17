@@ -1,28 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <container>
-    <bean name="bean11" class="com.aagu.test.Bean1" scope="prototype">
-        <property name="text" type="string" value="hello" />
-    </bean>
-    <bean name="bean12" class="com.aagu.test.Bean1" scope="prototype">
-        <property name="text" type="string" value="world" />
-    </bean>
-    <bean name="bean13" class="com.aagu.test.Bean1" scope="prototype">
-        <property name="text" type="string" value="bean" />
+    <bean name="bean1" class="com.aagu.test.Bean1" scope="prototype">
+        <property name="text" type="int" value="2415" />
     </bean>
     <bean name="bean2" class="com.aagu.test.Bean2">
-        <property name="bean1" ref="bean11" />
+        <property name="bean1" ref="bean1" />
     </bean>
     <bean name="bean3" class="com.aagu.test.Bean3">
-        <property name="strList" type="list" value="beans">
-            <item value="bean11" />
-            <item value="bean12" />
-            <item value="bean13" />
-        </property>
-        <constructor>
-            <param name="beanList" type="list" value="beans">
-                <item value="bean12" />
-                <item value="bean13" />
-            </param>
-        </constructor>
+        <property name="str" type="string" value="beans" />
+<!--        <constructor>-->
+<!--            <param name="beanList" type="list" value="beans">-->
+<!--                <item value="bean12" />-->
+<!--                <item value="bean13" />-->
+<!--            </param>-->
+<!--        </constructor>-->
     </bean>
 </container>

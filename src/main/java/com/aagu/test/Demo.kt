@@ -1,27 +1,23 @@
 package com.aagu.test
 
-import com.aagu.ioc.factory.AnnotationBeanFactory
+import com.aagu.ioc.TinyIocApplication
+import com.aagu.ioc.annotation.Application
+import com.aagu.ioc.runWithAnnotation
+import com.aagu.ioc.runWithXml
 
-fun main() {
-//    val ioc = XmlBeanFactory("src/main/resources/beans.xml")
-    val ioc = AnnotationBeanFactory("com.aagu.test")
-    ioc.init()
-//    val beanDef = GeneralBeanDefinition()
-//    beanDef.setBeanClass(Bean1::class.java)
-//    beanDef.setConstructorArguments(arrayOf(5))
-//    ioc.registerBeanDefinition("bean1", beanDef)
-//    val beanDef2 = GeneralBeanDefinition()
-//    beanDef2.setBeanClass(Bean2::class.java)
-//    beanDef2.setPropertyValues(listOf(PropertyValue("bean1", ioc.getBean("bean1"))))
-//    ioc.registerBeanDefinition("bean2", beanDef2)
-//    val beanDef3 = GeneralBeanDefinition()
-//    beanDef3.setBeanClass(Bean3::class.java)
-//    beanDef3.setPropertyValues(listOf(PropertyValue("bean2", ioc.getBean("bean2"))))
-//    ioc.registerBeanDefinition("bean3", beanDef3)
-    println(ioc.getBean<Bean1>("bean1"))
-    println(ioc.getBean(Bean2::class.java))
-    println(ioc.getBean(Bean3::class.java))
-    println(ioc.getBean<Bean4>("bean4"))
-    println(ioc.getBean<Bean4>("bean5"))
-    ioc.close()
+@Application(property = "src/main/resources/app.properties")
+class Demo: TinyIocApplication() {
+    override fun run(args: Array<String>) {
+        println(getBean<Bean1>("bean1"))
+        println(getBean(Bean2::class.java))
+        println(getBean(Bean3::class.java))
+//        println(getBean<Bean4>("bean4"))
+//        println(getBean<Bean4>("bean5"))
+    }
+
+}
+
+fun main(args: Array<String>) {
+    runWithAnnotation(Demo::class.java, args)
+//    runWithXml(Demo::class.java, args)
 }

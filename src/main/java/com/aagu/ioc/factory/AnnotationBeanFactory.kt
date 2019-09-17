@@ -6,6 +6,7 @@ import com.aagu.ioc.bean.BeanReference
 import com.aagu.ioc.bean.GeneralBeanDefinition
 import com.aagu.ioc.bean.PropertyValue
 import com.aagu.ioc.exception.IllegalBeanDefinitionException
+import com.aagu.ioc.exception.PropertyNotFoundException
 import com.aagu.ioc.util.PackageScanner
 import com.aagu.ioc.util.PropertyLoader
 import com.aagu.ioc.util.StringUtils
@@ -114,11 +115,13 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
                 var value = anno.value
                 if (value.isNotBlank()) {
                     if (value.startsWith("#")) {
-                        val propValue = StringUtils.getValueFromRegex(value, "\\#\\{(.*)\\}")
-                        if (propValue != null) {
-                            val pValue = PropertyLoader.getProperty(propValue)
-                            if (pValue != null) value = pValue
-                        }
+//                        val propValue = StringUtils.getValueFromRegex(value, "\\#\\{(.*)\\}(:\\w+)?")
+//                        if (propValue != null) {
+//                            val pValue = PropertyLoader.getProperty(propValue)
+//                            if (pValue != null) value = pValue
+//                            else throw PropertyNotFoundException("找不到prop: $propValue 的定义")
+//                        }
+                        value = handlePropValue(value)
                     }
                     when (field.type) {
                         Int::class.java -> {
@@ -151,5 +154,20 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
         }
         if (!findConstructorWithEmptyPropertyValue)
             throw IllegalBeanDefinitionException("名为 $beanName 的Bean没有无参构造函数！ 无法构造")
+    }
+
+    private fun handlePropValue(value: String): String {
+        val propGroups = StringUtils.getGroupsFromRegex(value, "\\#\\{(\\w+)\\}(:(\\w+))?")
+        if (propGroups.isEmpty()) {
+            throw PropertyNotFoundException("找不到prop: $value 的定义")
+        }
+        val propValue = propGroups[0]
+        if (propValue != null) {
+            return PropertyLoader.getProperty(propValue)
+                ?: if (propGroups.size > 2) {
+                    propGroups[2]!!
+                } else throw PropertyNotFoundException("找不到prop: $propValue 的定义")
+        }
+        return value
     }
 }

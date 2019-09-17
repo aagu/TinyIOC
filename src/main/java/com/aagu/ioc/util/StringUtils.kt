@@ -25,5 +25,17 @@ class StringUtils {
             }
             return null
         }
+
+        fun getGroupsFromRegex(string: String, regex: String): Array<String?> {
+            val matcher = Pattern.compile(regex).matcher(string)
+            if (matcher.find()) {
+                val groups = arrayOfNulls<String>(matcher.groupCount())
+                for (i in 1..matcher.groupCount()) {
+                    groups[i-1] = matcher.group(i)
+                }
+                return groups
+            }
+            return emptyArray()
+        }
     }
 }

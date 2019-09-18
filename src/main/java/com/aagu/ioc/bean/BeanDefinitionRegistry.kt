@@ -1,7 +1,5 @@
 package com.aagu.ioc.bean
 
-import com.aagu.ioc.bean.BeanDefinition
-
 interface BeanDefinitionRegistry {
     /**
      * 注册bean

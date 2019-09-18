@@ -6,14 +6,10 @@ import com.aagu.test.Bean1
 
 @Bean
 class Bean2() {
-    @Wire private var bean1: Bean1? = null
-
-    constructor(bean1: Bean1) : this() {
-        this.bean1 = bean1
-    }
+    @Wire private var bean: Bean5? = null
 
     override fun toString(): String {
-        return "Bean2: {bean1: $bean1}"
+        return "Bean2: {bean5: ${bean?.whoAmI()}}"
     }
 
 

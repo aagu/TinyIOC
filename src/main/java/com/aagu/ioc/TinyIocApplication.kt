@@ -16,6 +16,7 @@ public inline fun <reified T : TinyIocApplication> runWithAnnotation(clazz: Clas
     }
     val ioc = AnnotationBeanFactory(packageName)
     ioc.init()
+    ioc.finalizeInit()
     val instance = clazz.newInstance()
     instance.setBeanContainer(ioc)
     instance.run(args)
@@ -28,6 +29,7 @@ public inline fun <reified T: TinyIocApplication> runWithXml(clazz: Class<T>, ar
     check(!StringUtils.isEmpty(xmlLocation)) { "找不到xml定义文件" }
     val ioc = XmlBeanFactory(xmlLocation)
     ioc.init()
+    ioc.finalizeInit()
     val instance = clazz.newInstance()
     instance.setBeanContainer(ioc)
     instance.run(args)

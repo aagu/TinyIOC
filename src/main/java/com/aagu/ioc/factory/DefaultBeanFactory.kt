@@ -14,14 +14,13 @@ import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
 abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeable {
-    private val beanDefinitionMap = ConcurrentHashMap<String, BeanDefinition>(256)
+    protected val beanDefinitionMap = ConcurrentHashMap<String, BeanDefinition>(256)
     private val beanMap = ConcurrentHashMap<String, Any>(256)
     private val classMap = ConcurrentHashMap<Class<*>, String>(256)
     private val buildingBeans = ThreadLocal<HashSet<String>>().apply {
         set(HashSet())
     }
 
-    @Suppress("UNCHECKED_CAST")
     override fun <T> getBean(name: String): T {
         return doGetBean(name)
     }
@@ -80,6 +79,10 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
             }
         }
     }
+
+    abstract fun init()
+
+    abstract fun finalizeInit()
 
     @Suppress("UNCHECKED_CAST")
     fun <T> doGetBean(name: String): T {

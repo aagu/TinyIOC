@@ -10,8 +10,8 @@ class BeanConfig {
         return Bean4("bean4")
     }
 
-    @Bean
-    fun bean5(): Bean4 {
-        return Bean4("fake5")
-    }
+//    @Bean
+//    fun bean5(): Bean5 {
+//        return Bean5Impl()
+//    }
 }

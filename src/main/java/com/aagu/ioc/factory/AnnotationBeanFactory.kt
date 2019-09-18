@@ -1,36 +1,65 @@
 package com.aagu.ioc.factory
 
 import com.aagu.ioc.annotation.*
-import com.aagu.ioc.bean.BeanDefinition
-import com.aagu.ioc.bean.BeanReference
-import com.aagu.ioc.bean.GeneralBeanDefinition
-import com.aagu.ioc.bean.PropertyValue
-import com.aagu.ioc.exception.IllegalBeanDefinitionException
-import com.aagu.ioc.exception.PropertyNotFoundException
+import com.aagu.ioc.bean.*
+import com.aagu.ioc.exception.*
 import com.aagu.ioc.util.PackageScanner
 import com.aagu.ioc.util.PropertyLoader
 import com.aagu.ioc.util.StringUtils
 import java.lang.reflect.Method
+import java.util.concurrent.ConcurrentLinkedDeque
 
 class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory() {
+    private val interfaceList = ConcurrentLinkedDeque<Class<*>>()
+
     override fun init() {
         val scanner = PackageScanner()
         scanner.setFilter(object : PackageScanner.Companion.Filter {
             override fun accept(clazz: Class<*>): Boolean {
                 return clazz.isAnnotationPresent(Bean::class.java) || clazz.isAnnotationPresent(Config::class.java)
+                        || clazz.isInterface
             }
         })
         scanner.setListener(object : PackageScanner.Companion.Listener {
             override fun onScanClass(clazz: Class<*>) {
-                if (clazz.isAnnotationPresent(Bean::class.java)) {
-                    registerBean(clazz)
-                } else {
-                    registerConfig(clazz)
+                when {
+                    clazz.isAnnotationPresent(Bean::class.java) -> registerBean(clazz)
+                    clazz.isAnnotationPresent(Config::class.java) -> registerConfig(clazz)
+                    else -> interfaceList.add(clazz)
                 }
             }
         })
         scanner.addPackage(packageName)
         scanner.scan()
+    }
+
+    override fun finalizeInit() {
+        for (clazz in interfaceList) {
+            val impl = searchImplCandidates(clazz)
+            if (impl.isNotEmpty()) {
+                try {
+                    val implBeanDefinition = getBeanDefinition(impl[0])
+                    val beanName = StringUtils.lowerCaseFirstChar(clazz.simpleName)
+                    registerBeanDefinition(beanName, implBeanDefinition)
+                } catch (e: BeanNotFoundException) {
+
+                }
+            }
+        }
+        interfaceList.clear()
+    }
+
+    private fun searchImplCandidates(clazz: Class<*>): ArrayList<String> {
+        val beanDefs = beanDefinitionMap.entries
+        val result = ArrayList<String>()
+        for (def in beanDefs) {
+            val k = def.key
+            val v = def.value.getBeanClass()
+            if (v != null) {
+                if (clazz.isAssignableFrom(v)) result.add(k)
+            }
+        }
+        return result
     }
 
     private fun registerBean(clazz: Class<*>) {

@@ -7,10 +7,11 @@ import com.aagu.ioc.util.PackageScanner
 import com.aagu.ioc.util.PropertyLoader
 import com.aagu.ioc.util.StringUtils
 import java.lang.reflect.Method
-import java.util.concurrent.ConcurrentLinkedDeque
+import java.util.Collections.synchronizedList
+import kotlin.collections.ArrayList
 
 class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory() {
-    private val interfaceList = ConcurrentLinkedDeque<Class<*>>()
+    private val interfaceList = synchronizedList(ArrayList<Class<*>>())
 
     override fun init() {
         val scanner = PackageScanner()

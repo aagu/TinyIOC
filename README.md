@@ -1,9 +1,10 @@
 # Tiny IOC
-徒手（只依赖了dom4j，因为懒得处理xml文件）实现一个IOC容器
+利用尽量少的依赖（目前依赖dom4j，cglib）实现一个支持AOP的IOC容器
 
 设计思路参考[手写Spring---IOC容器（1）](https://juejin.im/post/5cb1c9c4e51d456e770bdc9c)
-和[手写Spring---DI依赖注入（2）](https://juejin.im/post/5cb778016fb9a068aa4b971b)，
-在此基础上扩展支持基于xml的bean定义和基于注解的bean定义，实现bean的自动化扫描。
+、[手写Spring---DI依赖注入（2）](https://juejin.im/post/5cb778016fb9a068aa4b971b)、
+[手写Spring---AOP面向切面编程（3）](https://juejin.im/post/5cc01088f265da035c6bc7f8)和[手写Spring---AOP面向切面编程（4）](https://juejin.im/post/5cc83ae5e51d456e7d18a000)
+在此基础上扩展支持基于xml的bean定义和基于注解的bean定义，实现bean的自动化扫描。后续将支持AOP织入
 
 | 实现的功能 | 注解方式 | xml方式 |
 | -------- | --------| -------|
@@ -15,6 +16,13 @@
 | 值注入 | [x] | [x] |
 | 依赖注入 | [x] | [x] |
 | 构造函数注入 | [x] | [x] |
+
+| 计划中的功能 | 进度 |
+| AOP所需代理类生成 | 100% |
+| 基于类和方法的切点定义 | 80% |
+| 基于正则式的切点定义 | 10% |
+| 切面扫描 | 0% |
+| 切面自动注册 | 0% |
 
 ## 注解方式设计约定
 * 标注`@Bean`或者`@Config`的类才能被扫描。`@Bean`作用在类上必须提供无参构造函数，若必须带参数，则可以在标记了`@Config`的类中将相应的

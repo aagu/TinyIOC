@@ -7,11 +7,11 @@ import com.aagu.ioc.annotation.Value
 import kotlin.properties.Delegates
 
 @Bean(scope = "prototype")
-class Bean1 {
+open class Bean1 {
     @Value("#{hello}:147") var text: Int = 0;
 
-    fun doSomething() {
-        println("${System.currentTimeMillis()} $this")
+    open fun doSomething() {
+        println("this is bean1")
     }
 
 //    @InitMethod

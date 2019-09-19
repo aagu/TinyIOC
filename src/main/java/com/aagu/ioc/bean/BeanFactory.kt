@@ -8,4 +8,6 @@ interface BeanFactory {
 
     @Throws(BeanNotFoundException::class)
     fun <T> getBean(clazz: Class<T>): T
+
+    fun registerBeanPostProcessor(processor: BeanPostProcessor)
 }

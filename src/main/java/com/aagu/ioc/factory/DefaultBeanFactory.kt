@@ -1,9 +1,6 @@
 package com.aagu.ioc.factory
 
-import com.aagu.ioc.bean.BeanDefinition
-import com.aagu.ioc.bean.BeanDefinitionRegistry
-import com.aagu.ioc.bean.BeanFactory
-import com.aagu.ioc.bean.BeanReference
+import com.aagu.ioc.bean.*
 import com.aagu.ioc.exception.*
 import com.aagu.ioc.util.StringUtils
 import java.io.Closeable
@@ -11,6 +8,7 @@ import java.lang.RuntimeException
 import java.lang.reflect.Constructor
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
+import java.util.Collections.synchronizedList
 import java.util.concurrent.ConcurrentHashMap
 
 abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeable {
@@ -20,6 +18,7 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
     private val buildingBeans = ThreadLocal<HashSet<String>>().apply {
         set(HashSet())
     }
+    private val beanPostProcessors = synchronizedList(ArrayList<BeanPostProcessor>())
 
     override fun <T> getBean(name: String): T {
         return doGetBean(name)
@@ -31,6 +30,10 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
         else {
             return getBean(name!!)
         }
+    }
+
+    override fun registerBeanPostProcessor(processor: BeanPostProcessor) {
+        beanPostProcessors.add(processor)
     }
 
     override fun registerBeanDefinition(name: String, definition: BeanDefinition) {
@@ -112,7 +115,11 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
 
         setPropertyDIValues(definition, instance)
 
+        instance = applyPostProcessorBeforeInitialization(instance, name)
+
         doInit(definition, instance)
+
+        instance = applyPostProcessorAfterInitialization(instance, name)
 
         if (definition.isSingleton()) {
             beanMap[name] = instance
@@ -286,5 +293,21 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
         } else {
             throw Exception("不存在对应的构造方法！$definition")
         }
+    }
+
+    private fun applyPostProcessorBeforeInitialization(instance: Any, beanName: String): Any {
+        var bean = instance
+        for (bpp in beanPostProcessors) {
+            bean = bpp.postProcessBeforeInitialization(beanName, bean)
+        }
+        return bean
+    }
+
+    private fun applyPostProcessorAfterInitialization(instance: Any, beanName: String): Any {
+        var bean = instance
+        for (bpp in beanPostProcessors) {
+            bean = bpp.postProcessAfterInitialization(beanName, bean)
+        }
+        return bean
     }
 }

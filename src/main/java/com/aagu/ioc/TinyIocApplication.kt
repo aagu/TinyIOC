@@ -1,5 +1,7 @@
 package com.aagu.ioc
 
+import com.aagu.aop.advisor.LogAdvisor
+import com.aagu.aop.proxy.AdvisorAutoProxyCreator
 import com.aagu.ioc.annotation.Application
 import com.aagu.ioc.bean.BeanFactory
 import com.aagu.ioc.factory.AnnotationBeanFactory
@@ -17,6 +19,9 @@ public inline fun <reified T : TinyIocApplication> runWithAnnotation(clazz: Clas
     val ioc = AnnotationBeanFactory(packageName)
     ioc.init()
     ioc.finalizeInit()
+    val advisorAutoProxyCreator = AdvisorAutoProxyCreator(ioc)
+    advisorAutoProxyCreator.registerAdvisor(LogAdvisor("aroundMethodAdvice", ""))
+    ioc.registerBeanPostProcessor(advisorAutoProxyCreator)
     val instance = clazz.newInstance()
     instance.setBeanContainer(ioc)
     instance.run(args)

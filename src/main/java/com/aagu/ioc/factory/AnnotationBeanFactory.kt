@@ -15,21 +15,29 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
 
     override fun init() {
         val scanner = PackageScanner()
-        scanner.setFilter(object : PackageScanner.Companion.Filter {
-            override fun accept(clazz: Class<*>): Boolean {
-                return clazz.isAnnotationPresent(Bean::class.java) || clazz.isAnnotationPresent(Config::class.java)
-                        || clazz.isInterface
-            }
-        })
-        scanner.setListener(object : PackageScanner.Companion.Listener {
-            override fun onScanClass(clazz: Class<*>) {
-                when {
-                    clazz.isAnnotationPresent(Bean::class.java) -> registerBean(clazz)
-                    clazz.isAnnotationPresent(Config::class.java) -> registerConfig(clazz)
-                    else -> interfaceList.add(clazz)
+
+        val beanAnnotationFilter = object :PackageScanner.Companion.Filter {
+            override fun onFilter(clazz: Class<*>) {
+                if (clazz.isAnnotationPresent(Bean::class.java)) {
+                    registerBean(clazz)
                 }
             }
-        })
+        }
+        val configAnnotationFilter = object :PackageScanner.Companion.Filter {
+            override fun onFilter(clazz: Class<*>) {
+                if (clazz.isAnnotationPresent(Config::class.java)) {
+                    registerConfig(clazz)
+                }
+            }
+        }
+        val interfaceAFilter = object :PackageScanner.Companion.Filter {
+            override fun onFilter(clazz: Class<*>) {
+                interfaceList.add(clazz)
+            }
+        }
+        scanner.addFilter(beanAnnotationFilter)
+        scanner.addFilter(configAnnotationFilter)
+        scanner.addFilter(interfaceAFilter)
         scanner.addPackage(packageName)
         scanner.scan()
     }

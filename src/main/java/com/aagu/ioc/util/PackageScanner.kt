@@ -12,23 +12,18 @@ import kotlin.collections.ArrayList
 class PackageScanner {
     var recursive = true
     private val packageNames = ArrayList<String>()
-    private lateinit var filter: Filter
-    private lateinit var listener: Listener
+    private val filters =  ArrayList<Filter>()
 
-    fun setFilter(filter: Filter) {
-        this.filter = filter
+    fun addFilter(filter: Filter) {
+        filters.add(filter)
     }
 
-    fun getFilter(): Filter {
-        return this.filter
+    fun getFilters(): List<Filter> {
+        return filters
     }
 
-    fun setListener(listener: Listener) {
-        this.listener = listener
-    }
-
-    fun getListener(): Listener {
-        return this.listener
+    fun clearFilters() {
+        filters.clear()
     }
 
     fun addPackage(packageName: String) {
@@ -46,17 +41,9 @@ class PackageScanner {
         }
     }
 
-    private fun accept(clazz: Class<*>): Boolean {
-        return filter.accept(clazz)
-    }
-
-    private fun triggerOnScanClass(clazz: Class<*>) {
-        listener.onScanClass(clazz)
-    }
-
     private fun onScanClass(clazz: Class<*>) {
-        if (accept(clazz)) {
-            triggerOnScanClass(clazz)
+        for (filter in filters) {
+            filter.onFilter(clazz)
         }
     }
 
@@ -142,11 +129,7 @@ class PackageScanner {
 
     companion object {
         interface Filter {
-            fun accept(clazz: Class<*>): Boolean
-        }
-
-        interface Listener {
-            fun onScanClass(clazz: Class<*>)
+            fun onFilter(clazz: Class<*>)
         }
     }
 }

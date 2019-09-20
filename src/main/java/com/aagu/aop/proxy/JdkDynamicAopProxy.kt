@@ -2,7 +2,7 @@ package com.aagu.aop.proxy
 
 import com.aagu.aop.advisor.Advisor
 import com.aagu.aop.util.AopProxyUtils
-import com.aagu.ioc.bean.BeanFactory
+import com.aagu.ioc.factory.BeanFactory
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy

@@ -1,21 +1,19 @@
 package com.aagu.aop.proxy
 
 import com.aagu.aop.advisor.Advisor
-import com.aagu.aop.advisor.AdvisorRegistry
 import com.aagu.aop.advisor.PointcutAdvisor
-import com.aagu.ioc.bean.BeanFactory
 import com.aagu.ioc.bean.BeanPostProcessor
+import com.aagu.ioc.factory.BeanFactory
 import java.lang.reflect.Method
-import java.util.Collections.synchronizedList
 
-class AdvisorAutoProxyCreator(private val beanFactory: BeanFactory): BeanPostProcessor, AdvisorRegistry {
-    private val advisors = synchronizedList(ArrayList<Advisor>())
+class AdvisorAutoProxyCreator(private val beanFactory: BeanFactory): BeanPostProcessor {
+    private lateinit var advisors: ArrayList<Advisor>
 
-    override fun registerAdvisor(ad: Advisor) {
-        advisors.add(ad)
+    fun setAdvisors(advisors: ArrayList<Advisor>) {
+        this.advisors = advisors
     }
 
-    override fun getAdvisors(): List<Advisor> {
+    fun getAdvisors(): ArrayList<Advisor> {
         return advisors
     }
 

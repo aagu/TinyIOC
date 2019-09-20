@@ -129,8 +129,6 @@ class XmlBeanFactory(private val xmlFile: String): DefaultBeanFactory() {
         scanner.scan()
     }
 
-    override fun finalizeInit() {}
-
     private fun insertBeanList(list: ArrayList<Any?>, item: Element) {
         val value = item.attributeValue("value")
         list.add(getBean(value))

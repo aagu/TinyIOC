@@ -3,7 +3,7 @@ package com.aagu.aop.util
 import com.aagu.aop.advisor.Advisor
 import com.aagu.aop.advisor.PointcutAdvisor
 import com.aagu.aop.proxy.AopAdviceChainInvocation
-import com.aagu.ioc.bean.BeanFactory
+import com.aagu.ioc.factory.BeanFactory
 import java.lang.reflect.Method
 
 class AopProxyUtils {

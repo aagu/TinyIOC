@@ -1,7 +1,7 @@
 package com.aagu.aop.proxy
 
 import com.aagu.aop.advisor.Advisor
-import com.aagu.ioc.bean.BeanFactory
+import com.aagu.ioc.factory.BeanFactory
 
 interface AopProxyFactory {
     fun createAopProxy(bean: Any, beanName: String, matchedAdvisors: List<Advisor>, beanFactory: BeanFactory): AopProxy

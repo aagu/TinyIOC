@@ -1,5 +1,6 @@
-package com.aagu.ioc.bean
+package com.aagu.ioc.factory
 
+import com.aagu.ioc.bean.BeanPostProcessor
 import com.aagu.ioc.exception.BeanNotFoundException
 
 interface BeanFactory {
@@ -10,4 +11,6 @@ interface BeanFactory {
     fun <T> getBean(clazz: Class<T>): T
 
     fun registerBeanPostProcessor(processor: BeanPostProcessor)
+
+    fun registerFactoryPostProcessor(processor: FactoryPostProcessor)
 }

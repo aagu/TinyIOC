@@ -19,6 +19,7 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
         set(HashSet())
     }
     private val beanPostProcessors = synchronizedList(ArrayList<BeanPostProcessor>())
+    private val factoryPostProcessor = synchronizedList(ArrayList<FactoryPostProcessor>())
 
     override fun <T> getBean(name: String): T {
         return doGetBean(name)
@@ -34,6 +35,10 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
 
     override fun registerBeanPostProcessor(processor: BeanPostProcessor) {
         beanPostProcessors.add(processor)
+    }
+
+    override fun registerFactoryPostProcessor(processor: FactoryPostProcessor) {
+        factoryPostProcessor.add(processor)
     }
 
     override fun registerBeanDefinition(name: String, definition: BeanDefinition) {
@@ -85,7 +90,11 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
 
     abstract fun init()
 
-    abstract fun finalizeInit()
+    open fun finalizeInit() {
+        for (processor in factoryPostProcessor) {
+            processor.process(beanDefinitionMap)
+        }
+    }
 
     @Suppress("UNCHECKED_CAST")
     fun <T> doGetBean(name: String): T {

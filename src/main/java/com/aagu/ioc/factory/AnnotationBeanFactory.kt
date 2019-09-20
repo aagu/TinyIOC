@@ -1,14 +1,18 @@
 package com.aagu.ioc.factory
 
 import com.aagu.ioc.annotation.*
-import com.aagu.ioc.bean.*
-import com.aagu.ioc.exception.*
+import com.aagu.ioc.bean.BeanDefinition
+import com.aagu.ioc.bean.BeanReference
+import com.aagu.ioc.bean.GeneralBeanDefinition
+import com.aagu.ioc.bean.PropertyValue
+import com.aagu.ioc.exception.BeanNotFoundException
+import com.aagu.ioc.exception.IllegalBeanDefinitionException
+import com.aagu.ioc.exception.PropertyNotFoundException
 import com.aagu.ioc.util.PackageScanner
 import com.aagu.ioc.util.PropertyLoader
 import com.aagu.ioc.util.StringUtils
 import java.lang.reflect.Method
 import java.util.Collections.synchronizedList
-import kotlin.collections.ArrayList
 
 class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory() {
     private val interfaceList = synchronizedList(ArrayList<Class<*>>())
@@ -43,6 +47,7 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
     }
 
     override fun finalizeInit() {
+        super.finalizeInit()
         for (clazz in interfaceList) {
             val impl = searchImplCandidates(clazz)
             if (impl.isNotEmpty()) {

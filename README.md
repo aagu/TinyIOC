@@ -1,5 +1,5 @@
 # Tiny IOC
-利用尽量少的依赖（目前依赖dom4j，cglib）实现一个支持AOP的IOC容器
+利用尽量少的依赖（目前依赖dom4j，cglib，aspectjweaver）实现一个支持AOP的IOC容器
 
 设计思路参考[手写Spring---IOC容器（1）](https://juejin.im/post/5cb1c9c4e51d456e770bdc9c)
 、[手写Spring---DI依赖注入（2）](https://juejin.im/post/5cb778016fb9a068aa4b971b)、
@@ -20,10 +20,10 @@
 | 计划中的功能 | 进度 |
 | -------- | -------- |
 | AOP所需代理类生成 | 100% |
-| 基于类和方法的切点定义 | 80% |
-| 基于正则式的切点定义 | 10% |
-| 切面扫描 | 0% |
-| 切面自动注册 | 0% |
+| 基于类和方法的切点定义 | 100% |
+| 基于正则式的切点定义 | 30%(未完整测试) |
+| 切面扫描 | 100% |
+| 切面自动注册 | 100% |
 
 ## 注解方式设计约定
 * 标注`@Bean`或者`@Config`的类才能被扫描。`@Bean`作用在类上必须提供无参构造函数，若必须带参数，则可以在标记了`@Config`的类中将相应的
@@ -47,3 +47,6 @@
 程序的入口定义在TinyIocApplication中，实际使用时我们需要新建一个它的子类并实现`run`方法，待容器初始化完成后将从此处开始运行。同时我们的子类必须加入`@Application`注解，
 我们可以在该注解上填写`basePackage`指定扫描的包（默认为我们的子类所在的包）。要想使用xml方式的容器，需要在`@Application`注解上填写`xmlLocation`注明xml文件所在路径。
 另外`@Application`还可通过`property`指定property文件，从文件读取值的定义。
+
+目前仅支持注解方式的AOP使用，通过实现`AfterAdvice`、`BeforeAdvice`或者`AroundAdvice`接口，
+对方法实现相应增强逻辑，并在注解上标记AspectJ形式的匹配语法，最后在类上加入`@Bean`注解即可使用

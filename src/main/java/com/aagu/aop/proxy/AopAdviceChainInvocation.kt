@@ -1,8 +1,6 @@
 package com.aagu.aop.proxy
 
-import com.aagu.aop.advice.AfterAdvice
-import com.aagu.aop.advice.AroundAdvice
-import com.aagu.aop.advice.BeforeAdvice
+import com.aagu.aop.advice.*
 import java.lang.reflect.Method
 
 class AopAdviceChainInvocation(
@@ -10,18 +8,27 @@ class AopAdviceChainInvocation(
     private val target: Any,
     private val method: Method,
     private val args: Array<Any>,
-    private val advices: List<Any>
+    private val advices: List<AdviceDelegate>
 ) {
     private var index = 0
     fun invoke(): Any? {
         if (index < advices.size) {
-            when (val advice = advices[index++]) {
-                is BeforeAdvice -> advice.before(method, args, target)
-                is AroundAdvice -> return advice.around(invokeMethod, emptyArray(), this)
-                is AfterAdvice -> {
+            val advice = advices[index++]
+            when (advice.adviceType) {
+                BeforeAdvice::class.java -> (advice.getDelegate() as BeforeAdvice).before(method, args, target)
+                AroundAdvice::class.java -> return (advice.getDelegate() as AroundAdvice).around(invokeMethod, emptyArray(), this)
+                AfterAdvice::class.java -> {
                     var returnValue = this.invoke()
-                    advice.after(returnValue, method, args, target)
+                    (advice.getDelegate() as AfterAdvice).after(returnValue, method, args, target)
                     return returnValue
+                }
+                ExceptionAdvice::class.java -> {
+                    return try {
+                        method.invoke(target, *args)
+                    } catch (e: Exception) {
+                        (advice.getDelegate() as ExceptionAdvice).afterThrow(e, method, args, target)
+                        null
+                    }
                 }
             }
             return this.invoke()

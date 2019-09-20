@@ -1,10 +1,7 @@
 package com.aagu.test
 
 import com.aagu.ioc.annotation.Bean
-import com.aagu.ioc.annotation.DestroyMethod
-import com.aagu.ioc.annotation.InitMethod
 import com.aagu.ioc.annotation.Value
-import kotlin.properties.Delegates
 
 @Bean(scope = "prototype")
 open class Bean1 {
@@ -15,8 +12,9 @@ open class Bean1 {
     }
 
 //    @InitMethod
-    fun init() {
+    open fun init() {
         println("init of bean1")
+        throw RuntimeException("something went wrong")
     }
 
 //    @DestroyMethod

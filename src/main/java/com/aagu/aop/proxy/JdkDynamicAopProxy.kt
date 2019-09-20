@@ -12,7 +12,7 @@ class JdkDynamicAopProxy(
     val target: Any,
     private val matchedAdvisors: List<Advisor>,
     private val beanFactory: BeanFactory
-    ): AopProxy, InvocationHandler {
+): AopProxy, InvocationHandler {
     override fun getProxy(): Any {
         return this.getProxy(target.javaClass.classLoader)
     }

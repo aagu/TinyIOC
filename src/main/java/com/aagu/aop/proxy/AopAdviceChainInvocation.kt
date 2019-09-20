@@ -7,7 +7,7 @@ class AopAdviceChainInvocation(
     private val proxy: Any,
     private val target: Any,
     private val method: Method,
-    private val args: Array<Any>,
+    private val args: Array<Any?>,
     private val advices: List<AdviceDelegate>
 ) {
     private var index = 0

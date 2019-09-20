@@ -21,7 +21,7 @@ class JdkDynamicAopProxy(
         return Proxy.newProxyInstance(classLoader, target.javaClass.interfaces, this)
     }
 
-    override fun invoke(proxy: Any, method: Method, args: Array<Any>): Any? {
+    override fun invoke(proxy: Any, method: Method, args: Array<Any?>): Any? {
         return AopProxyUtils.applyAdvices(target, method, args, matchedAdvisors, proxy, beanFactory)
     }
 }

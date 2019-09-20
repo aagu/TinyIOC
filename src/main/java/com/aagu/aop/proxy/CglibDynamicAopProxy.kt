@@ -41,7 +41,7 @@ class CglibDynamicAopProxy(
         }
     }
 
-    override fun intercept(proxy: Any, method: Method, args: Array<Any>, methodProxy: MethodProxy): Any? {
+    override fun intercept(proxy: Any, method: Method, args: Array<Any?>, methodProxy: MethodProxy): Any? {
         return AopProxyUtils.applyAdvices(target, method, args, matchedAdvisors, proxy, beanFactory)
     }
 

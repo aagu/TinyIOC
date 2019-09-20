@@ -12,7 +12,7 @@ class AopProxyUtils {
         fun applyAdvices(
             target: Any,
             method: Method,
-            args: Array<Any>,
+            args: Array<Any?>,
             matchedAdvisors: List<Advisor>,
             proxy: Any,
             beanFactory: BeanFactory

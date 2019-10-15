@@ -36,7 +36,9 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
         }
         val interfaceAFilter = object :PackageScanner.Companion.Filter {
             override fun onFilter(clazz: Class<*>) {
-                interfaceList.add(clazz)
+                if (clazz.isInterface) {
+                    interfaceList.add(clazz)
+                }
             }
         }
         scanner.addFilter(beanAnnotationFilter)
@@ -44,6 +46,8 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
         scanner.addFilter(interfaceAFilter)
         scanner.addPackage(packageName)
         scanner.scan()
+        scanner.clearFilters()
+        scanner.clearPackage()
     }
 
     override fun finalizeInit() {

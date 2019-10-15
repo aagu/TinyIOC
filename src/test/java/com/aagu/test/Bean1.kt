@@ -11,6 +11,10 @@ open class Bean1 {
         println("this is bean1")
     }
 
+    open fun doAnotherThing() {
+        println("this is a function")
+    }
+
 //    @InitMethod
     open fun init() {
         println("init of bean1")

@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 
+@Deprecated(message = "this class is deprecated", replaceWith = ReplaceWith("AdviceWrapper"))
 class AdviceDelegate(val beanName: String, val target: Any, val adviceType: Class<*>): InvocationHandler {
     fun getDelegate(): Any {
         return getDelegate(target.javaClass.classLoader)

@@ -1,10 +1,15 @@
 package com.aagu.ioc.factory
 
-import com.aagu.ioc.bean.*
-import com.aagu.ioc.exception.*
+import com.aagu.ioc.bean.BeanDefinition
+import com.aagu.ioc.bean.BeanDefinitionRegistry
+import com.aagu.ioc.bean.BeanPostProcessor
+import com.aagu.ioc.bean.BeanReference
+import com.aagu.ioc.exception.BeanDefinitionNotFoundException
+import com.aagu.ioc.exception.BeanNotFoundException
+import com.aagu.ioc.exception.DuplicateBeanDefinitionException
+import com.aagu.ioc.exception.IllegalBeanDefinitionException
 import com.aagu.ioc.util.StringUtils
 import java.io.Closeable
-import java.lang.RuntimeException
 import java.lang.reflect.Constructor
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
@@ -39,6 +44,7 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
 
     override fun registerFactoryPostProcessor(processor: FactoryPostProcessor) {
         factoryPostProcessor.add(processor)
+        processor.setBeanFactory(this)
     }
 
     override fun registerBeanDefinition(name: String, definition: BeanDefinition) {

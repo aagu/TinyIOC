@@ -18,6 +18,10 @@ class PackageScanner {
         filters.add(filter)
     }
 
+    fun addFilters(filtersToAdd: Collection<Filter>) {
+        filters.addAll(filtersToAdd)
+    }
+
     fun getFilters(): List<Filter> {
         return filters
     }
@@ -127,9 +131,7 @@ class PackageScanner {
         }
     }
 
-    companion object {
-        interface Filter {
-            fun onFilter(clazz: Class<*>)
-        }
+    interface Filter {
+        fun onFilter(clazz: Class<*>)
     }
 }

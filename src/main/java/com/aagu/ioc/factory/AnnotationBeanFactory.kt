@@ -16,25 +16,26 @@ import java.util.Collections.synchronizedList
 
 class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory() {
     private val interfaceList = synchronizedList(ArrayList<Class<*>>())
+    private val scanFilters = synchronizedList(ArrayList<PackageScanner.Filter>())
+    private val scanner = PackageScanner()
 
     override fun init() {
-        val scanner = PackageScanner()
 
-        val beanAnnotationFilter = object :PackageScanner.Companion.Filter {
+        val beanAnnotationFilter = object :PackageScanner.Filter {
             override fun onFilter(clazz: Class<*>) {
                 if (clazz.isAnnotationPresent(Bean::class.java)) {
                     registerBean(clazz)
                 }
             }
         }
-        val configAnnotationFilter = object :PackageScanner.Companion.Filter {
+        val configAnnotationFilter = object :PackageScanner.Filter {
             override fun onFilter(clazz: Class<*>) {
                 if (clazz.isAnnotationPresent(Config::class.java)) {
                     registerConfig(clazz)
                 }
             }
         }
-        val interfaceAFilter = object :PackageScanner.Companion.Filter {
+        val interfaceAFilter = object :PackageScanner.Filter {
             override fun onFilter(clazz: Class<*>) {
                 if (clazz.isInterface) {
                     interfaceList.add(clazz)
@@ -44,6 +45,7 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
         scanner.addFilter(beanAnnotationFilter)
         scanner.addFilter(configAnnotationFilter)
         scanner.addFilter(interfaceAFilter)
+        scanner.addFilters(scanFilters)
         scanner.addPackage(packageName)
         scanner.scan()
         scanner.clearFilters()
@@ -65,6 +67,14 @@ class AnnotationBeanFactory(private val packageName: String): DefaultBeanFactory
             }
         }
         interfaceList.clear()
+    }
+
+    fun addOnScanFilter(filter: PackageScanner.Filter) {
+        scanFilters.add(filter)
+    }
+
+    fun clearScanFilters() {
+        scanFilters.clear()
     }
 
     private fun searchImplCandidates(clazz: Class<*>): ArrayList<String> {

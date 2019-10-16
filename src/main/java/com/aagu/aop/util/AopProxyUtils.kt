@@ -62,10 +62,10 @@ class AopProxyUtils {
 
         private fun createAdviceWrapper(advisor: Advisor, beanFactory: BeanFactory): AdviceWrapper {
             when (val adviceType = advisor.getAdviceType()) {
-                AfterAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
-                AroundAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
-                BeforeAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
-                ExceptionAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
+                AfterAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), advisor.getAdviceMethodName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
+                AroundAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), advisor.getAdviceMethodName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
+                BeforeAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), advisor.getAdviceMethodName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
+                ExceptionAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), advisor.getAdviceMethodName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
             }
             throw RuntimeException("无法创建Advice包装对象，未知Advice类型!")
         }

@@ -13,17 +13,25 @@ public inline fun <reified T : TinyIocApplication> runWithAnnotation(clazz: Clas
     val appAnno = clazz.getAnnotation(Application::class.java)
     val packageName = if (StringUtils.isNotEmpty(appAnno.basePackage)) appAnno.basePackage else clazz.`package`.name
     val propDef = appAnno.property
+    var enableAop = false
+    var advisorManager: AdvisorManager? = null
     if (StringUtils.isNotEmpty(propDef)) {
         PropertyLoader.load(propDef)
+        enableAop = PropertyLoader.getProperty("enable-aop") == "true"
     }
-    val advisorManager = AdvisorManager()
     val ioc = AnnotationBeanFactory(packageName)
-    ioc.registerFactoryPostProcessor(advisorManager)
+    if (enableAop) {
+        advisorManager = AdvisorManager()
+        ioc.addOnScanFilter(advisorManager)
+        ioc.registerFactoryPostProcessor(advisorManager)
+    }
     ioc.init()
     ioc.finalizeInit()
-    val advisorAutoProxyCreator = AdvisorAutoProxyCreator(ioc)
-    advisorAutoProxyCreator.setAdvisors(advisorManager.getAdvisors())
-    ioc.registerBeanPostProcessor(advisorAutoProxyCreator)
+    if (enableAop) {
+        val advisorAutoProxyCreator = AdvisorAutoProxyCreator(ioc)
+        advisorAutoProxyCreator.setAdvisors(advisorManager!!.getAdvisors())
+        ioc.registerBeanPostProcessor(advisorAutoProxyCreator)
+    }
     val instance = clazz.newInstance()
     instance.setBeanContainer(ioc)
     instance.run(args)

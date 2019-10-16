@@ -1,17 +1,20 @@
 package com.aagu.aop.advisor
 
 import com.aagu.aop.advice.*
-import com.aagu.aop.annotation.After
-import com.aagu.aop.annotation.AfterThrow
-import com.aagu.aop.annotation.Around
-import com.aagu.aop.annotation.Before
+import com.aagu.aop.annotation.*
 import com.aagu.ioc.bean.BeanDefinition
+import com.aagu.ioc.bean.GeneralBeanDefinition
+import com.aagu.ioc.factory.DefaultBeanFactory
 import com.aagu.ioc.factory.FactoryPostProcessor
+import com.aagu.ioc.util.PackageScanner
+import com.aagu.ioc.util.StringUtils
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
-class AdvisorManager: AdvisorRegistry, FactoryPostProcessor {
+class AdvisorManager: AdvisorRegistry, FactoryPostProcessor, PackageScanner.Filter {
     private val advisors = ArrayList<Advisor>()
+    private val aspects = ArrayList<Class<*>>()
+    private lateinit var factory: DefaultBeanFactory
 
     override fun registerAdvisor(ad: Advisor) {
         advisors.add(ad)
@@ -22,14 +25,24 @@ class AdvisorManager: AdvisorRegistry, FactoryPostProcessor {
     }
 
     override fun process(beanDefinitionMap: ConcurrentHashMap<String, BeanDefinition>) {
-        for (beanDefs in beanDefinitionMap) {
-            val beanClass = beanDefs.value.getBeanClass()
-            if (beanClass != null) {
-                val methods = beanClass.methods
-                for (method in methods) {
-                    processAdviceMethod(beanDefs.key, method)
-                }
+        for (clazz in aspects) {
+            val beanName = StringUtils.lowerCaseFirstChar(clazz.simpleName)
+            for (method in clazz.methods) {
+                processAdviceMethod(beanName, method)
             }
+            val beanDef = GeneralBeanDefinition()
+            beanDef.setBeanClass(clazz)
+            factory.registerBeanDefinition(beanName, beanDef)
+        }
+    }
+
+    override fun setBeanFactory(beanFactory: DefaultBeanFactory) {
+        this.factory = beanFactory
+    }
+
+    override fun onFilter(clazz: Class<*>) {
+        if (clazz.isAnnotationPresent(Aspect::class.java)) {
+            aspects.add(clazz)
         }
     }
 
@@ -55,7 +68,7 @@ class AdvisorManager: AdvisorRegistry, FactoryPostProcessor {
             }
         }
         if (expression.isNotEmpty()) {
-            registerAdvisor(AspectJPointcutAdvisor(beanName, expression, adviceType))
+            registerAdvisor(AspectJPointcutAdvisor(beanName, method.name, expression, adviceType))
         }
     }
 }

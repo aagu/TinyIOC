@@ -5,9 +5,10 @@ import com.aagu.aop.pointcut.Pointcut
 
 class AspectJPointcutAdvisor(
     adviceBeanName: String,
+    adviceMethodName: String,
     expression: String,
     adviceType: Class<*>
-): AbstractPointcutAdvisor(adviceBeanName, expression, adviceType) {
+): AbstractPointcutAdvisor(adviceBeanName, adviceMethodName, expression, adviceType) {
     private val pointcut: Pointcut
 
     init {

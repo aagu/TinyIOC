@@ -48,5 +48,8 @@
 我们可以在该注解上填写`basePackage`指定扫描的包（默认为我们的子类所在的包）。要想使用xml方式的容器，需要在`@Application`注解上填写`xmlLocation`注明xml文件所在路径。
 另外`@Application`还可通过`property`指定property文件，从文件读取值的定义。
 
-目前仅支持注解方式的AOP使用，通过实现`AfterAdvice`、`BeforeAdvice`或者`AroundAdvice`接口，
-对方法实现相应增强逻辑，并在注解上标记AspectJ形式的匹配语法，最后在类上加入`@Bean`注解即可使用
+目前仅支持注解方式的AOP使用，标记`@Aspect`的类将被识别为切面定义。
+目前支持前置、后置、环绕和异常四种切点定义，分别使用`@Before`、`@After`、`@Around`和`@AfterThrow`标记，并为expression参数传入AspectJ形式的匹配语法。
+方法名没有限定，前置、后置和异常切点入参为`JointPoint`类，环绕切点入参为`ProceedJointPoint`。
+
+！！！注意：AOP默认关闭，需要在property中加入`enable-aop = true`手动开启

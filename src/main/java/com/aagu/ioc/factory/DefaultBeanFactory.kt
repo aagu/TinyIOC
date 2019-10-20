@@ -1,9 +1,6 @@
 package com.aagu.ioc.factory
 
-import com.aagu.ioc.bean.BeanDefinition
-import com.aagu.ioc.bean.BeanDefinitionRegistry
-import com.aagu.ioc.bean.BeanPostProcessor
-import com.aagu.ioc.bean.BeanReference
+import com.aagu.ioc.bean.*
 import com.aagu.ioc.exception.BeanDefinitionNotFoundException
 import com.aagu.ioc.exception.BeanNotFoundException
 import com.aagu.ioc.exception.DuplicateBeanDefinitionException
@@ -129,6 +126,10 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
         beanUnderBuilding.remove(name)
 
         setPropertyDIValues(definition, instance)
+
+        applyBeanNameAware(definition, instance, name)
+
+        applyBeanFactoryAware(definition, instance)
 
         instance = applyPostProcessorBeforeInitialization(instance, name)
 
@@ -324,5 +325,19 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
             bean = bpp.postProcessAfterInitialization(beanName, bean)
         }
         return bean
+    }
+
+    private fun applyBeanNameAware(definition: BeanDefinition, instance: Any, beanName: String) {
+        val beanClass = definition.getBeanClass()
+        if (beanClass != null && BeanNameAware::class.java.isAssignableFrom(beanClass)) {
+            (instance as BeanNameAware).setBeanName(beanName)
+        }
+    }
+
+    private fun applyBeanFactoryAware(definition: BeanDefinition, instance: Any) {
+        val beanClass = definition.getBeanClass()
+        if (beanClass != null && BeanFactoryAware::class.java.isAssignableFrom(beanClass)) {
+            (instance as BeanFactoryAware).setBeanFactory(this)
+        }
     }
 }

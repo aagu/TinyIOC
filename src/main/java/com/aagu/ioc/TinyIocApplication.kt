@@ -56,7 +56,7 @@ abstract class TinyIocApplication {
     abstract fun run(args: Array<String>)
 
     fun <T> getBean(name: String): T {
-        return beanFactory.getBean<T>(name)
+        return beanFactory.getBean(name)
     }
 
     fun <T> getBean(clazz: Class<T>): T {

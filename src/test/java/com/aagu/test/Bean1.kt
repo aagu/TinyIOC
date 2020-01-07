@@ -12,6 +12,7 @@ open class Bean1 {
     }
 
     open fun doAnotherThing() {
+        doSomething()
         println("this is a function")
     }
 

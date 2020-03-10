@@ -11,4 +11,6 @@ interface BeanDefinitionRegistry {
     fun getBeanDefinition(name: String): BeanDefinition
 
     fun containsBeanDefinition(name: String): Boolean
+
+    fun getRegisteredBeanNames(): List<String>
 }

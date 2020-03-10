@@ -6,14 +6,13 @@ import com.aagu.ioc.exception.BeanNotFoundException
 import com.aagu.ioc.exception.DuplicateBeanDefinitionException
 import com.aagu.ioc.exception.IllegalBeanDefinitionException
 import com.aagu.ioc.util.StringUtils
-import java.io.Closeable
 import java.lang.reflect.Constructor
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.util.Collections.synchronizedList
 import java.util.concurrent.ConcurrentHashMap
 
-abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeable {
+abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry {
     protected val beanDefinitionMap = ConcurrentHashMap<String, BeanDefinition>(256)
     private val beanMap = ConcurrentHashMap<String, Any>(256)
     private val classMap = ConcurrentHashMap<Class<*>, String>(256)
@@ -91,6 +90,10 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry, Closeabl
                 }
             }
         }
+    }
+
+    override fun getRegisteredBeanNames(): List<String> {
+        return beanDefinitionMap.keys().toList()
     }
 
     abstract fun init()

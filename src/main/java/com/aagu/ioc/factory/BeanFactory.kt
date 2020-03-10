@@ -2,8 +2,9 @@ package com.aagu.ioc.factory
 
 import com.aagu.ioc.bean.BeanPostProcessor
 import com.aagu.ioc.exception.BeanNotFoundException
+import java.io.Closeable
 
-interface BeanFactory {
+interface BeanFactory : Closeable {
     @Throws(BeanNotFoundException::class)
     fun <T> getBean(name: String): T
 

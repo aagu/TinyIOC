@@ -1,4 +1,4 @@
-package com.aagu.test
+package com.aagu.test.sub
 
 interface Bean5 {
     fun whoAmI(): String

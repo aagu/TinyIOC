@@ -5,6 +5,7 @@ import com.aagu.ioc.annotation.Wire
 import com.aagu.ioc.bean.BeanFactoryAware
 import com.aagu.ioc.bean.BeanNameAware
 import com.aagu.ioc.factory.DefaultBeanFactory
+import com.aagu.test.sub.Bean5
 
 @Bean
 class Bean2: BeanNameAware, BeanFactoryAware {

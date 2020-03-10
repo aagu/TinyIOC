@@ -18,6 +18,10 @@ object PropertyLoader {
         isLoaded = false
     }
 
+    fun getConfigs(): Properties {
+        return if (isLoaded) properties else Properties()
+    }
+
     fun getProperty(key: String): String? {
         var value: String? = null
         if (isLoaded) {

@@ -20,7 +20,7 @@ import java.sql.ResultSet
 import java.util.concurrent.LinkedBlockingQueue
 
 @Bean
-class SessionFactory {
+class SessionFactory private constructor(){
     private lateinit var pool : ConnectPool
     private val waitingQueue = LinkedBlockingQueue<String>()
 

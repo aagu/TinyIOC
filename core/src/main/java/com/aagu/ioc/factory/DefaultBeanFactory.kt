@@ -6,7 +6,6 @@ import com.aagu.ioc.exception.BeanNotFoundException
 import com.aagu.ioc.exception.DuplicateBeanDefinitionException
 import com.aagu.ioc.exception.IllegalBeanDefinitionException
 import com.aagu.ioc.util.StringUtils
-import java.lang.reflect.Constructor
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.util.Collections.synchronizedList
@@ -189,8 +188,17 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry {
     private fun createInstanceByConstructor(definition: BeanDefinition): Any {
         try {
             val args = getConstructorArgumentValues(definition)
-            return if (args.isEmpty()) definition.getBeanClass()!!.newInstance()
-            else determineConstructor(definition, args).newInstance(*args)
+            val constructor = definition.getConstructor()
+            return if (constructor != null) {
+                if (args.isEmpty()) {
+                    constructor.newInstance()
+                } else {
+                    constructor.newInstance(*args)
+                }
+            } else {
+                //bad news, we have to invoke Class.newInstance directly
+                definition.getBeanClass()!!.newInstance()
+            }
         } catch (e: InstantiationException) {
             println("创建 ${definition.getBeanClass()} 实例异常 ${e.message}")
             throw e
@@ -214,49 +222,6 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry {
             actualValues[i] = value
         }
         return actualValues
-    }
-
-    private fun determineConstructor(definition: BeanDefinition, args: Array<*>?): Constructor<*> {
-        var constructor: Constructor<*>?
-        // 无参构造函数
-        if (args == null) return definition.getBeanClass()!!.getConstructor()
-
-        // 尝试从definition获取
-        constructor = definition.getConstructor()
-        if (constructor != null) return constructor
-
-        // 根据参数类型获取
-        val paramTypes = arrayOfNulls<Class<*>>(args.size)
-        var j = 0
-        for (p in args) {
-            paramTypes[j++] = p!!.javaClass
-        }
-        try {
-            constructor = definition.getBeanClass()!!.getConstructor(*paramTypes)
-        } catch (e: Exception) {
-            // 这个异常不需要处理
-        }
-
-        if (constructor == null) {
-            val constructors = definition.getBeanClass()!!.constructors
-            outer@ for (constr in constructors) {
-                val pTypes = constr.parameterTypes
-                if (pTypes.size == args.size) {
-                    for (i in pTypes.indices) {
-                        if (pTypes[i].typeName == args[i]!!.javaClass.typeName) continue@outer
-                    }
-                    constructor = constr
-                    break@outer
-                }
-            }
-        }
-
-        if (constructor != null) {
-            definition.setConstructor(constructor)
-            return constructor
-        } else {
-            throw NoSuchMethodException("在 ${definition.getBeanClass()} 中找不到入参为 $args 的构造函数")
-        }
     }
 
     private fun determineFactoryMethod(definition: BeanDefinition, args: Array<*>?, type: Class<*>?): Method {

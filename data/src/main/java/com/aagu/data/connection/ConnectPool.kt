@@ -1,5 +1,6 @@
 package com.aagu.data.connection
 
+import com.aagu.data.exception.PoolNotInitializedException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.sql.Connection
@@ -58,10 +59,10 @@ class ConnectPool private constructor(
         return conn
     }
 
-    @Throws(SQLException::class)
+    @Throws(SQLException::class, PoolNotInitializedException::class)
     @Synchronized
-    fun getConnection(): Connection? {
-        if (connections == null) return null
+    fun getConnection(): Connection {
+        if (connections == null) throw PoolNotInitializedException()
 
         var conn = getFreeConnection()
 

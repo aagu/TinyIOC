@@ -1,15 +1,52 @@
-package com.aagu.data
+package com.aagu.data.util
 
 import com.aagu.data.annotation.Column
 import com.aagu.data.annotation.Entity
 import com.aagu.data.annotation.Ignore
 import com.aagu.data.exception.NotEntityException
 import java.lang.reflect.Constructor
+import java.lang.reflect.Field
 import java.sql.ResultSet
 
 object Processor {
+    fun <T> bindList(entityClass: Class<T>, rs: ResultSet): List<T> {
+        return when (entityClass) {
+            String::class.java -> {
+                bindStringList(rs)
+            }
+            Int::class.java -> {
+                bindIntList(rs)
+            }
+            else -> {
+                bindEntityList(entityClass, rs)
+            }
+        }
+    }
+
     @Suppress("UNCHECKED_CAST")
-    fun <T> createEntityList(entityClass: Class<T>, rs: ResultSet): List<T> {
+    private fun <T> bindStringList(rs: ResultSet): List<T> {
+        val list = ArrayList<T>()
+
+        while (rs.next()) {
+            list.add(rs.getString(1) as T)
+        }
+
+        return list
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> bindIntList(rs: ResultSet): List<T> {
+        val list = ArrayList<T>()
+
+        while (rs.next()) {
+            list.add(rs.getInt(1) as T)
+        }
+
+        return list
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> bindEntityList(entityClass: Class<T>, rs: ResultSet): List<T> {
         if (!entityClass.isAnnotationPresent(Entity::class.java)) throw NotEntityException(entityClass.simpleName)
         val fields = entityClass.declaredFields
         val entities = ArrayList<T>()
@@ -28,11 +65,7 @@ object Processor {
 
                 field.isAccessible = true
 
-                val columnName = if (field.isAnnotationPresent(Column::class.java)) {
-                    field.getAnnotation(Column::class.java).name
-                } else {
-                    field.name
-                }
+                val columnName = columnNameBuilder(field)
 
                 when (field.type) {
                     Integer::class.java -> field.set(entity, rs.getInt(columnName))
@@ -45,6 +78,24 @@ object Processor {
         }
 
         return entities
+    }
+
+    private fun columnNameBuilder(field: Field): String {
+        return if (field.isAnnotationPresent(Column::class.java)) {
+            field.getAnnotation(Column::class.java).name
+        } else {
+            val origName: String = field.name
+            val builder = StringBuilder()
+            for (char in origName.toCharArray()) {
+                if (char.isUpperCase()) {
+                    builder.append("_").append(char.toLowerCase())
+                } else {
+                    builder.append(char)
+                }
+            }
+
+            builder.toString()
+        }
     }
 
     private fun chooseConstructor(clazz: Class<*>): Constructor<*> {

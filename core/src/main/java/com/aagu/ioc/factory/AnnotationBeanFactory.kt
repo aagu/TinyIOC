@@ -2,14 +2,16 @@ package com.aagu.ioc.factory
 
 import com.aagu.ioc.annotation.Bean
 import com.aagu.ioc.annotation.Config
+import com.aagu.ioc.bean.FactoryBeanDefinition
 import com.aagu.ioc.exception.BeanNotFoundException
 import com.aagu.ioc.util.BeanUtils
 import com.aagu.ioc.util.PackageScanner
 import com.aagu.ioc.util.StringUtils
 import java.util.Collections.synchronizedList
+import java.util.Collections.synchronizedSet
 
 class AnnotationBeanFactory(private val packageNames: List<String>): DefaultBeanFactory() {
-    private val interfaceList = synchronizedList(ArrayList<Class<*>>())
+    private val interfaceSet = synchronizedSet(HashSet<Class<*>>())
     private val scanFilters = synchronizedList(ArrayList<PackageScanner.Filter>())
     private val scanner = PackageScanner()
 
@@ -31,8 +33,8 @@ class AnnotationBeanFactory(private val packageNames: List<String>): DefaultBean
         }
         val interfaceFilter = object :PackageScanner.Filter {
             override fun onFilter(clazz: Class<*>) {
-                if (clazz.isInterface) {
-                    interfaceList.add(clazz)
+                if (clazz.isInterface && !clazz.isAnnotation) {
+                    interfaceSet.add(clazz)
                 }
             }
         }
@@ -50,7 +52,7 @@ class AnnotationBeanFactory(private val packageNames: List<String>): DefaultBean
 
     override fun finalizeInit() {
         super.finalizeInit()
-        for (clazz in interfaceList) {
+        for (clazz in interfaceSet) {
             val impl = searchImplCandidates(clazz)
             if (impl.isNotEmpty()) {
                 try {
@@ -62,7 +64,7 @@ class AnnotationBeanFactory(private val packageNames: List<String>): DefaultBean
                 }
             }
         }
-        interfaceList.clear()
+        interfaceSet.clear()
     }
 
     fun addOnScanFilter(filter: PackageScanner.Filter) {
@@ -105,9 +107,16 @@ class AnnotationBeanFactory(private val packageNames: List<String>): DefaultBean
                     }
                 }
 
-                factoryMethod?.let {
-                    val returnType = it.returnType
-                    if (clazz.isAssignableFrom(returnType)) result.add(k)
+                if (factoryMethod != null) {
+                    val returnType = factoryMethod!!.returnType
+                    if (clazz.isAssignableFrom(returnType)) {
+                        result.add(k)
+                    } else {
+                        val definition = def.value
+                        if (definition is FactoryBeanDefinition && definition.allowGenericType) {
+                            result.add(k)
+                        }
+                    }
                 }
             }
         }

@@ -264,9 +264,9 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry {
         if (localType == null) {
             localType = definition.getBeanClass()
         }
-        val methodName = definition.getFactoryMethodName()
+        val methodName = definition.getFactoryMethodName()!!
         if (args == null) {
-            return localType!!.getMethod(methodName!!)
+            return localType!!.getMethod(methodName)
         }
         var m: Method?
         // 对于原型bean,从第二次开始获取bean实例时，可直接获得第一次缓存的构造方法。
@@ -281,7 +281,7 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry {
             paramTypes[j++] = p!!.javaClass
         }
         try {
-            m = localType!!.getMethod(methodName!!, *paramTypes)
+            m = localType!!.getMethod(methodName, *paramTypes)
         } catch (e: Exception) {
             // 这个异常不需要处理
         }

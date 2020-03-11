@@ -306,7 +306,7 @@ abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry {
             }
         }
         if (m != null) {
-            // 对于原型bean,可以缓存找到的方法，方便下次构造实例对象。在BeanDefinfition中获取设置所用方法的方法。
+            // 对于原型bean,可以缓存找到的方法，方便下次构造实例对象。在BeanDefinition中获取设置所用方法的方法。
             if (definition.isPrototype()) {
                 definition.setFactoryMethod(m)
             }

@@ -9,7 +9,7 @@ import com.aagu.ioc.util.PackageScanner
 
 //import com.aagu.mvc.annotation.Controller
 
-class PropertiesApplicationContext(private val packageNames: List<String>) : AbstractApplicationContext() {
+class PropertiesApplicationContext(private val packageNames: ArrayList<String>) : AbstractApplicationContext() {
     private var beanFactory: AnnotationBeanFactory = AnnotationBeanFactory(packageNames)
     private val registeredBeanNames = HashSet<String>()
 
@@ -85,5 +85,9 @@ class PropertiesApplicationContext(private val packageNames: List<String>) : Abs
 
     fun addOnScanFilter(filter: PackageScanner.Filter) {
         beanFactory.addOnScanFilter(filter)
+    }
+
+    fun addScanPackage(packageName: String) {
+        packageNames.add(packageName)
     }
 }

@@ -1,5 +1,6 @@
 package com.aagu.ioc.util
 
+import com.aagu.ioc.exception.PropertyNotFoundException
 import java.io.BufferedReader
 import java.io.FileReader
 import java.util.*
@@ -32,5 +33,20 @@ object PropertyLoader {
             }
         }
         return value
+    }
+
+    @Throws(PropertyNotFoundException::class)
+    fun getBooleanProperty(key: String): Boolean {
+        val value: String = getProperty(key) ?: throw PropertyNotFoundException(key)
+
+        return value == "true"
+    }
+
+    fun getBooleanProperty(key: String, defValue: Boolean): Boolean {
+        return try {
+            getBooleanProperty(key)
+        } catch (ignore: PropertyNotFoundException) {
+            defValue
+        }
     }
 }

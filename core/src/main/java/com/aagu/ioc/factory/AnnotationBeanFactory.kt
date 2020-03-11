@@ -29,7 +29,7 @@ class AnnotationBeanFactory(private val packageNames: List<String>): DefaultBean
                 }
             }
         }
-        val interfaceAFilter = object :PackageScanner.Filter {
+        val interfaceFilter = object :PackageScanner.Filter {
             override fun onFilter(clazz: Class<*>) {
                 if (clazz.isInterface) {
                     interfaceList.add(clazz)
@@ -38,7 +38,7 @@ class AnnotationBeanFactory(private val packageNames: List<String>): DefaultBean
         }
         scanner.addFilter(beanAnnotationFilter)
         scanner.addFilter(configAnnotationFilter)
-        scanner.addFilter(interfaceAFilter)
+        scanner.addFilter(interfaceFilter)
         scanner.addFilters(scanFilters)
         for (packageName in packageNames) {
             scanner.addPackage(packageName)
@@ -81,6 +81,34 @@ class AnnotationBeanFactory(private val packageNames: List<String>): DefaultBean
             val v = def.value.getBeanClass()
             if (v != null) {
                 if (clazz.isAssignableFrom(v)) result.add(k)
+            } else {
+                //try factory construction
+                var factoryMethod = def.value.getFactoryMethod()
+                if (factoryMethod == null) {
+                    val factoryMethodName = def.value.getFactoryMethodName()
+                    factoryMethodName?.let {
+                        //if factory method name is not empty, then we can get factory bean name
+                        val factoryBeanClass = getBean<Any>(def.value.getFactoryBeanName()!!)::class.java
+                        val factoryConstructorArgs: Array<*>? = def.value.getConstructorArgumentValues()
+                        factoryMethod = if (factoryConstructorArgs == null) {
+                            factoryBeanClass.getMethod(def.value.getFactoryMethodName())
+                        } else {
+                            val typedArgs = factoryConstructorArgs.map {
+                                    value -> if (value == null) null else value::class.java
+                            }.toTypedArray()
+                            factoryBeanClass.getMethod(def.value.getFactoryMethodName(), *typedArgs)
+                        }
+                        factoryMethod?.let {
+                            // cache it
+                            def.value.setFactoryMethod(it)
+                        }
+                    }
+                }
+
+                factoryMethod?.let {
+                    val returnType = it.returnType
+                    if (clazz.isAssignableFrom(returnType)) result.add(k)
+                }
             }
         }
         return result

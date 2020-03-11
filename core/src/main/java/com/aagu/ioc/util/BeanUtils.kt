@@ -81,10 +81,14 @@ object BeanUtils {
             }
             if (field.isAnnotationPresent(Value::class.java)) {
                 val anno = field.getAnnotation(Value::class.java)
-                var value = anno.value
+                var value:String = anno.value
                 if (value.isNotBlank()) {
                     if (value.startsWith("#")) {
-                        value = handlePropValue(value)
+                        try {
+                            value = handlePropValue(value)
+                        } catch (e: PropertyNotFoundException) {
+                            continue
+                        }
                     }
                     when (field.type) {
                         Int::class.java -> {
@@ -119,6 +123,7 @@ object BeanUtils {
             throw IllegalBeanDefinitionException("名为 $beanName 的Bean没有无参构造函数！ 无法构造")
     }
 
+    @Throws(PropertyNotFoundException::class)
     private fun handlePropValue(value: String): String {
         val propGroups = StringUtils.getGroupsFromRegex(value, "\\#\\{(\\w+)\\}(:(\\w+))?")
         if (propGroups.isEmpty()) {

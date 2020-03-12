@@ -20,5 +20,18 @@ class RepositoryProxyFactory<T>(private val repositoryInterface: Class<T>) {
 
     fun cacheMethod(method: Method, repositoryMethod: RepositoryMethod) {
         methodCache[method] = repositoryMethod
+//        processArgParameters(method, repositoryMethod)
+//        repositoryMethod.argParameters = method.parameters
     }
+
+//    private fun processArgParameters(method: Method, repositoryMethod: RepositoryMethod) {
+//        repositoryMethod.argParameters = method.annotatedParameterTypes
+//        repositoryMethod.argParameters?.let {
+//            for (idx in it.indices) {
+//                if (it[idx].isAnnotationPresent(Param::class.java)) {
+//                    it[idx].
+//                }
+//            }
+//        }
+//    }
 }

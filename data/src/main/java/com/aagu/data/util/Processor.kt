@@ -68,7 +68,7 @@ object Processor {
                 val columnName = columnNameBuilder(field)
 
                 when (field.type) {
-                    Integer::class.java -> field.set(entity, rs.getInt(columnName))
+                    Int::class.java -> field.set(entity, rs.getInt(columnName))
                     String::class.java -> field.set(entity, rs.getString(columnName))
                     Long::class.java -> field.set(entity, rs.getLong(columnName))
                 }

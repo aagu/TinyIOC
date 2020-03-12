@@ -8,6 +8,7 @@ import com.aagu.data.connection.ConnectPool
 import com.aagu.data.proxy.Command
 import com.aagu.data.proxy.RepositoryMethod
 import com.aagu.data.proxy.RepositoryProxyFactory
+import com.aagu.data.util.SqlUtils
 import com.aagu.ioc.annotation.Bean
 import com.aagu.ioc.annotation.DestroyMethod
 import com.aagu.ioc.annotation.InitMethod
@@ -42,17 +43,19 @@ class SessionFactory private constructor(){
         pool.createPool()
     }
 
-    fun query(sql: String): ResultSet {
+    fun query(sql: String, args: Map<String, Any>): ResultSet {
         val conn: Connection = pool.getConnection()
-        val stmt = conn.prepareStatement(sql)
+        val parsedSql = SqlUtils.prepareSql(sql, args)
+        val stmt = conn.prepareStatement(parsedSql)
         val res = stmt.executeQuery()
         pool.freeConnection(conn)
         return res
     }
 
-    fun execute(sql: String): Int {
+    fun execute(sql: String, args: Map<String, Any>): Int {
         val conn: Connection = pool.getConnection()
-        val stmt = conn.prepareStatement(sql)
+        val parsedSql = SqlUtils.prepareSql(sql, args)
+        val stmt = conn.prepareStatement(parsedSql)
         val res = stmt.executeUpdate()
         pool.freeConnection(conn)
         return res

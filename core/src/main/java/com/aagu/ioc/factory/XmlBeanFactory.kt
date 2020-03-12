@@ -9,7 +9,7 @@ import com.aagu.ioc.util.XmlScanner
 import org.dom4j.Element
 
 
-class XmlBeanFactory(private val xmlFile: String): DefaultBeanFactory() {
+class XmlBeanFactory(private val xmlFile: String): AbstractBeanFactory() {
     override fun init() {
         val scanner = XmlScanner()
         scanner.addXmlFile(xmlFile)

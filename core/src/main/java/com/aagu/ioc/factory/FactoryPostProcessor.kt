@@ -5,5 +5,5 @@ import java.util.concurrent.ConcurrentHashMap
 
 interface FactoryPostProcessor {
     fun process(beanDefinitionMap: ConcurrentHashMap<String, BeanDefinition>)
-    fun setBeanFactory(beanFactory: DefaultBeanFactory) {}
+    fun setBeanFactory(beanFactory: AbstractBeanFactory) {}
 }

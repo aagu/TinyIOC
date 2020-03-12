@@ -11,7 +11,7 @@ import java.lang.reflect.Method
 import java.util.Collections.synchronizedList
 import java.util.concurrent.ConcurrentHashMap
 
-abstract class DefaultBeanFactory: BeanFactory, BeanDefinitionRegistry {
+abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
     protected val beanDefinitionMap = ConcurrentHashMap<String, BeanDefinition>(256)
     private val beanMap = ConcurrentHashMap<String, Any>(256)
     private val classMap = ConcurrentHashMap<Class<*>, String>(256)

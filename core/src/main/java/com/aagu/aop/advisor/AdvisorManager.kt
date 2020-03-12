@@ -4,7 +4,7 @@ import com.aagu.aop.advice.*
 import com.aagu.aop.annotation.*
 import com.aagu.ioc.bean.BeanDefinition
 import com.aagu.ioc.bean.GeneralBeanDefinition
-import com.aagu.ioc.factory.DefaultBeanFactory
+import com.aagu.ioc.factory.AbstractBeanFactory
 import com.aagu.ioc.factory.FactoryPostProcessor
 import com.aagu.ioc.util.PackageScanner
 import com.aagu.ioc.util.StringUtils
@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap
 class AdvisorManager: AdvisorRegistry, FactoryPostProcessor, PackageScanner.Filter {
     private val advisors = ArrayList<Advisor>()
     private val aspects = ArrayList<Class<*>>()
-    private lateinit var factory: DefaultBeanFactory
+    private lateinit var factory: AbstractBeanFactory
 
     override fun registerAdvisor(ad: Advisor) {
         advisors.add(ad)
@@ -36,7 +36,7 @@ class AdvisorManager: AdvisorRegistry, FactoryPostProcessor, PackageScanner.Filt
         }
     }
 
-    override fun setBeanFactory(beanFactory: DefaultBeanFactory) {
+    override fun setBeanFactory(beanFactory: AbstractBeanFactory) {
         this.factory = beanFactory
     }
 

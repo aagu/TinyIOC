@@ -10,6 +10,8 @@ class Demo : TinyIocApplication() {
         val bean1 = getBean(Bean1::class.java)
 
         bean1.doSomething()
+
+        println(getBean<Gear>("gear"))
     }
 }
 

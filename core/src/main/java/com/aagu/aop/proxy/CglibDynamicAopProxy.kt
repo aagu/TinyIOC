@@ -2,8 +2,8 @@ package com.aagu.aop.proxy
 
 import com.aagu.aop.advisor.Advisor
 import com.aagu.aop.util.AopProxyUtils
+import com.aagu.ioc.factory.AbstractBeanFactory
 import com.aagu.ioc.factory.BeanFactory
-import com.aagu.ioc.factory.DefaultBeanFactory
 import net.sf.cglib.proxy.Enhancer
 import net.sf.cglib.proxy.MethodInterceptor
 import net.sf.cglib.proxy.MethodProxy
@@ -36,7 +36,7 @@ class CglibDynamicAopProxy(
         return if (constructor != null) {
             enhancer.create()
         } else {
-            val bd = (beanFactory as DefaultBeanFactory).getBeanDefinition(beanName)
+            val bd = (beanFactory as AbstractBeanFactory).getBeanDefinition(beanName)
             enhancer.create(bd.getConstructor()!!.parameterTypes, bd.getConstructorArgumentValues())
         }
     }

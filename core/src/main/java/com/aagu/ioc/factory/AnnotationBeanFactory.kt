@@ -10,7 +10,7 @@ import com.aagu.ioc.util.StringUtils
 import java.util.Collections.synchronizedList
 import java.util.Collections.synchronizedSet
 
-class AnnotationBeanFactory(private val packageNames: List<String>): DefaultBeanFactory() {
+class AnnotationBeanFactory(private val packageNames: List<String>): AbstractBeanFactory() {
     private val interfaceSet = synchronizedSet(HashSet<Class<*>>())
     private val scanFilters = synchronizedList(ArrayList<PackageScanner.Filter>())
     private val scanner = PackageScanner()

@@ -2,7 +2,6 @@ package com.aagu.ioc.util
 
 import com.aagu.ioc.annotation.*
 import com.aagu.ioc.bean.*
-import com.aagu.ioc.exception.IllegalBeanDefinitionException
 import com.aagu.ioc.exception.PropertyNotFoundException
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
@@ -25,6 +24,7 @@ object BeanUtils {
         val configName = clazz.simpleName
         val configBeanDef = GeneralBeanDefinition()
         configBeanDef.setBeanClass(clazz)
+        takeCareConstructor(clazz, configName, configBeanDef)
         registry.registerBeanDefinition(configName, configBeanDef)
 
         val beanDeclareMethod = clazz.methods.filter { method -> method.isAnnotationPresent(Bean::class.java) }
@@ -117,51 +117,47 @@ object BeanUtils {
         beanDef: GeneralBeanDefinition
     ) {
         val constructors = clazz.declaredConstructors
-        var findConstructorWithoutArgs = false
-        for (c in constructors) {
-            if (c.parameterCount == 0) {
-                findConstructorWithoutArgs = true
-                c.isAccessible = true
-                beanDef.setConstructor(c)
-                break
-            }
+        var args = beanDef.getConstructorArgumentValues()
+        var constructor: Constructor<*>? = null
+
+        if (args == null) {
+            args = arrayOfNulls<Class<*>>(0)
         }
-        if (!findConstructorWithoutArgs) {
-            val args = beanDef.getConstructorArgumentValues()
-                ?: throw IllegalBeanDefinitionException("名为 $beanName 的Bean没有无参构造函数！ 无法构造")
-
-            val paramTypes = arrayOfNulls<Class<*>>(args.size)
-            var constructor: Constructor<*>? = null
-            var j = 0
-            for (p in args) {
-                paramTypes[j++] = p!!.javaClass
-            }
-            try {
-                constructor = beanDef.getBeanClass()!!.getConstructor(*paramTypes)
-            } catch (e: Exception) {
-                // 这个异常不需要处理
-            }
-
-            if (constructor == null) {
-                outer@ for (constr in constructors) {
-                    val pTypes = constr.parameterTypes
-                    if (pTypes.size == args.size) {
-                        for (i in pTypes.indices) {
-                            if (pTypes[i].typeName == args[i]!!.javaClass.typeName) continue@outer
-                        }
-                        constructor = constr
-                        break@outer
+        for (c in constructors) {
+            if (c.parameterCount == args.size) {
+                if (args.isNotEmpty()) {
+                    if (findConstructorWithArgs(c, args)) {
+                        constructor = c
+                        break
                     }
+                } else {
+                    constructor = c
                 }
             }
+        }
 
-            if (constructor != null) {
-                constructor.isAccessible = true
-                beanDef.setConstructor(constructor)
-            } else {
-                throw NoSuchMethodException("在 ${beanDef.getBeanClass()} 中找不到入参为 $args 的构造函数")
+        if (constructor != null) {
+            constructor.isAccessible = true
+            beanDef.setConstructor(constructor)
+        } else {
+            throw NoSuchMethodException("在 $beanName 的定义 ${beanDef.getBeanClass()} 中找不到入参为 $args 的构造函数")
+        }
+    }
+
+    private fun findConstructorWithArgs(constructor: Constructor<*>, args: Array<*>): Boolean {
+        var found = true
+
+        val pTypes = constructor.parameterTypes
+        if (pTypes.size == args.size) {
+            for (i in pTypes.indices) {
+                if (pTypes[i].typeName != args[i]!!.javaClass.typeName) {
+                    found = false
+                    break
+                }
             }
         }
+
+        return found
     }
 
     @Throws(PropertyNotFoundException::class)

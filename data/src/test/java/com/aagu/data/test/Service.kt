@@ -8,7 +8,7 @@ class Service {
     @Wire lateinit var userDao: UserDao
 
     fun doWork() {
-        val users = userDao.getAll(2)
+        val users = userDao.getAll("Kin", 2)
 
         for (user in users) {
             println(user)

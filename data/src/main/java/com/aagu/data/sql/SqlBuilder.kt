@@ -16,8 +16,8 @@ class SqlBuilder(private val sql: String) {
         var varIdx = 0
         for (part in sqlParts) {
             if (part is StaticSqlPart) builder.append(part.value)
-            else {
-                val realValue = args["var$varIdx"]
+            else if (part is VariableSqlPart){
+                val realValue = args[part.placeHolder]
                 varIdx++
                 builder.append(realValue.toString())
             }
@@ -81,13 +81,4 @@ class SqlBuilder(private val sql: String) {
     fun getOriginalSql(): String {
         return sql
     }
-}
-
-fun main() {
-    val sql1 = "select * from user where id=\$id"
-    val sql2 = "select \$col1, \$col2 from user where id=\$id"
-    val sql3 = "select id, name from \$table"
-//    SqlBuilder(sql1).build(null)
-//    SqlBuilder(sql2).build(null)
-//    SqlBuilder(sql3).build(null)
 }

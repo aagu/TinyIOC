@@ -1,5 +1,7 @@
 package com.aagu.data.proxy
 
+import com.aagu.data.annotation.Param
+import com.aagu.data.sql.Variable
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 import java.util.concurrent.ConcurrentHashMap
@@ -20,18 +22,19 @@ class RepositoryProxyFactory<T>(private val repositoryInterface: Class<T>) {
 
     fun cacheMethod(method: Method, repositoryMethod: RepositoryMethod) {
         methodCache[method] = repositoryMethod
-//        processArgParameters(method, repositoryMethod)
-//        repositoryMethod.argParameters = method.parameters
+        processArgParameters(method, repositoryMethod)
     }
 
-//    private fun processArgParameters(method: Method, repositoryMethod: RepositoryMethod) {
-//        repositoryMethod.argParameters = method.annotatedParameterTypes
-//        repositoryMethod.argParameters?.let {
-//            for (idx in it.indices) {
-//                if (it[idx].isAnnotationPresent(Param::class.java)) {
-//                    it[idx].
-//                }
-//            }
-//        }
-//    }
+    private fun processArgParameters(method: Method, repositoryMethod: RepositoryMethod) {
+        val parameters = method.parameters
+        repositoryMethod.argVariables = Array(parameters.size) { Variable() }
+        for ((idx, p) in parameters.withIndex()) {
+            repositoryMethod.argVariables[idx].type = p.type
+            if (p.isAnnotationPresent(Param::class.java)) {
+                repositoryMethod.argVariables[idx].name = p.getAnnotation(Param::class.java).value
+            } else {
+                repositoryMethod.argVariables[idx].name = p.name
+            }
+        }
+    }
 }

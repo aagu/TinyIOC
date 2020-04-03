@@ -27,7 +27,10 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
 
     override fun <T> getBean(clazz: Class<T>): T {
         val name = classMap[clazz]
-        if (StringUtils.isEmpty(name)) throw BeanNotFoundException(name)
+        if (StringUtils.isEmpty(name)) {
+            println("could not find bean with name: $name")
+            throw BeanNotFoundException(name)
+        }
         else {
             return getBean(name!!)
         }
@@ -158,6 +161,7 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
             var value: Any?
             value = when (origValue) {
                 is BeanReference -> doGetBean(origValue.getBeanName())
+                "null" -> null
                 else -> origValue
             }
             field.set(instance, value)

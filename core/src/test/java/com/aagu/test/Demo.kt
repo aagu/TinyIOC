@@ -4,7 +4,7 @@ import com.aagu.ioc.TinyIocApplication
 import com.aagu.ioc.annotation.Application
 import com.aagu.ioc.runWithAnnotation
 
-@Application(property = "app.properties")
+@Application(property = "app-no-data.properties")
 class Demo : TinyIocApplication() {
     override fun run(args: Array<String>) {
         val bean1 = getBean(Bean1::class.java)

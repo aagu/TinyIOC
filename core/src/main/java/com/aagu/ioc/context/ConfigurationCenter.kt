@@ -43,12 +43,12 @@ class ConfigurationCenter(private val context: PropertiesApplicationContext) {
         override fun beforeContextRefresh(context: PropertiesApplicationContext) {
             context.addOnScanFilter(advisorManager)
             context.registerFactoryPostProcessor(advisorManager)
-        }
-
-        override fun afterContextRefresh(context: PropertiesApplicationContext) {
             val advisorAutoProxyCreator = AdvisorAutoProxyCreator(context)
             advisorAutoProxyCreator.setAdvisors(advisorManager.getAdvisors())
             context.registerBeanPostProcessor(advisorAutoProxyCreator)
+        }
+
+        override fun afterContextRefresh(context: PropertiesApplicationContext) {
         }
     }
 }

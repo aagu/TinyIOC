@@ -1,5 +1,9 @@
 package com.aagu.mvc
 
+import com.aagu.ioc.annotation.Bean
+import com.aagu.ioc.context.ApplicationContext
+import com.aagu.mvc.method.HandlerMethodAdapter
+import com.aagu.mvc.method.HandlerMethodMapping
 import java.io.IOException
 import java.util.*
 import javax.servlet.ServletConfig
@@ -8,7 +12,7 @@ import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-
+@Bean
 class DispatcherServlet : HttpServlet() {
     private lateinit var handlerMapping: HandlerMapping
     private lateinit var handlerAdaptor: HandlerAdapter
@@ -18,7 +22,12 @@ class DispatcherServlet : HttpServlet() {
 
     }
 
-    override fun doGet(req: HttpServletRequest, resp: HttpServletResponse) {
+    fun registerMapping(context: ApplicationContext) {
+        handlerMapping = HandlerMethodMapping(context)
+        handlerAdaptor = HandlerMethodAdapter()
+    }
+
+    public override fun doGet(req: HttpServletRequest, resp: HttpServletResponse) {
         this.doPost(req, resp)
     }
 
@@ -27,11 +36,11 @@ class DispatcherServlet : HttpServlet() {
         try {
             doDispatch(req, resp)
         } catch (ex: Exception) {
-            resp.writer?.write(
-                "500 Exception,Details:\r\n"
-                        + Arrays.toString(ex.stackTrace).replace("[\\[\\]]".toRegex(), "")
-                    .replace(",\\s".toRegex(), "\r\n")
-            )
+            val error = "500 Exception,Details:\r\n ${Arrays.toString(ex.stackTrace).replace("[\\[\\]]".toRegex(), "")
+                .replace(",\\s".toRegex(), "\r\n")}"
+            resp.setContentLength(error.length)
+            resp.writer?.write(error)
+            ex.printStackTrace()
         }
     }
 
@@ -39,12 +48,21 @@ class DispatcherServlet : HttpServlet() {
     private fun doDispatch(req: HttpServletRequest, resp: HttpServletResponse) {
         val handler = handlerMapping.getHandler(req)
 
-        handler?.let {
-            resp.writer?.write("404 Not Found")
-            return
+        if (handler == null) {
+            resp.status = 500
+            val msg = "unknown mapping ${req.requestURI}"
+            resp.setContentLength(msg.length)
+            resp.writer.write(msg)
+        } else {
+            val modelAndView = handlerAdaptor.handle(req, resp, handler)
+            resp.status = 200
+            val responseBody = if (modelAndView != null) {
+                 modelAndView.model?.values.toString()
+            } else {
+                "empty"
+            }
+            resp.setContentLength(responseBody.length)
+            resp.writer.write(responseBody)
         }
-
-        val modelAndView = handlerAdaptor.handle(req, resp, handler!!)
-        resp.writer.write(modelAndView?.model?.values.toString())
     }
 }

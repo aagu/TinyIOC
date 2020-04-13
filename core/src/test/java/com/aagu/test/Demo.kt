@@ -10,8 +10,9 @@ class Demo : TinyIocApplication() {
         val bean1 = getBean(Bean1::class.java)
 
         bean1.doSomething()
+        bean1.doAnotherThing()
 
-        println(getBean<Gear>("gear"))
+        println(bean1.hashCode())
     }
 }
 

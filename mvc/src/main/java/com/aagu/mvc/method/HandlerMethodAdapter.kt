@@ -2,6 +2,7 @@ package com.aagu.mvc.method
 
 import com.aagu.mvc.HandlerAdapter
 import com.aagu.mvc.ModelAndView
+import com.aagu.mvc.ModelMap
 import com.aagu.mvc.annotation.RequestParam
 import java.util.*
 import javax.servlet.http.HttpServletRequest
@@ -69,15 +70,25 @@ class HandlerMethodAdapter : HandlerAdapter {
             paramValues[respIndex] = resp
         }
 
-        val result: Any = handler.method.invoke(handler.bean, paramValues)
-        if (result is Void) {
-            return null
-        }
+        val result: Any = handler.method.invoke(handler.bean, *paramValues)
 
         val isModelAndView = handler.method.returnType === ModelAndView::class.java
-        return if (isModelAndView) {
-            result as ModelAndView
-        } else null
+        return when {
+            result is Void -> {
+                null
+            }
+            isModelAndView -> {
+                result as ModelAndView
+            }
+            result is String -> {
+                val model = ModelAndView()
+                model.model = ModelMap("String", result)
+                model
+            }
+            else -> {
+                null
+            }
+        }
     }
 
     private fun parseValue(value: String, paramsType: Class<*>): Any? {

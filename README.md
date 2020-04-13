@@ -67,6 +67,9 @@
 
 数据库支持的设计思路参考Mybatis，Dao层接口用`@Repository`标识，提供`@Select`，`@Insert`，`@Update`，`@Delete`注解，每种注解需要声明sql语句，暂不支持占位。配合`@Wire`注解自动注入实现类。当然也可以获取`sessionFactory`实例，手动执行sql，返回结果为`ResultSet`。
 
+## Web服务器
+该项目内置的Web服务器处于非常初级的阶段，并未在开发计划中（其实就是我自己玩玩）
+
 ## 如何使用
 程序的入口定义在TinyIocApplication中，实际使用时我们需要新建一个它的子类并实现`run`方法，待容器初始化完成后将从此处开始运行。同时我们的子类必须加入`@Application`注解，
 我们可以在该注解上填写`basePackage`指定扫描的包（默认为我们的子类所在的包）。要想使用xml方式的容器，需要在`@Application`注解上填写`xmlLocation`注明xml文件所在路径。

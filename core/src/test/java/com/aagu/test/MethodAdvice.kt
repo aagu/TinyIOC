@@ -6,7 +6,7 @@ import com.aagu.aop.annotation.Before
 
 @Aspect
 class MethodAdvice {
-    @Before("execution (* com.aagu.test.Bean1.doSomething())")
+    @Before("execution (* com.aagu.test.Bean1.*(..))")
     fun before(jointPoint: JointPoint) {
         println("before method call")
     }

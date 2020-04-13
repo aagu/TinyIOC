@@ -1,5 +1,5 @@
 package com.aagu.mvc.annotation
 
-@Target(AnnotationTarget.FUNCTION)
+@Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Controller

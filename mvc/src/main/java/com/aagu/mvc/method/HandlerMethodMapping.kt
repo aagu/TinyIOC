@@ -7,8 +7,7 @@ import com.aagu.mvc.annotation.RequestMapping
 import java.lang.reflect.Method
 import javax.servlet.http.HttpServletRequest
 
-
-class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping{
+class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
     private val mappingRegistry = MappingRegistry()
 
     init {
@@ -42,7 +41,7 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping{
                     baseUrl = requestMapping.value
                 }
                 //获取Method的url配置
-                val methods = clazz.methods
+                val methods = clazz.declaredMethods
                 for (method in methods) { //没有加RequestMapping注解的直接忽略
                     if (!method.isAnnotationPresent(RequestMapping::class.java)) {
                         continue
@@ -57,7 +56,7 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping{
                             "/"
                         )
                     mappingRegistry.register(regex, bean, method)
-                    println("Mapped $regex,$method")
+                    println("Mapped $regex, ${method.returnType} ${method.name}")
                 }
             }
         } catch (e: Exception) {

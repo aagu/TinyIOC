@@ -11,5 +11,11 @@
 
     <artifactId>web</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>com.aagu.framework</groupId>
+            <artifactId>mvc</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>

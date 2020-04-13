@@ -1,6 +1,5 @@
 package com.aagu.ioc
 
-import com.aagu.aop.advisor.AdvisorManager
 import com.aagu.ioc.annotation.Application
 import com.aagu.ioc.context.ConfigurationCenter
 import com.aagu.ioc.context.support.PropertiesApplicationContext
@@ -10,17 +9,12 @@ import com.aagu.ioc.util.PropertyLoader
 import com.aagu.ioc.util.StringUtils
 import sun.misc.Signal
 
-const val DATA_SUPPORT_PACKAGE_NAME = "com.aagu.data"
-
 public inline fun <reified T : TinyIocApplication> runWithAnnotation(clazz: Class<T>, args: Array<String>) {
     val appAnno = clazz.getAnnotation(Application::class.java)
     val packageName = if (StringUtils.isNotEmpty(appAnno.basePackage)) appAnno.basePackage else clazz.`package`.name
     val propDef = appAnno.property
-    var enableWeb = false
-    var advisorManager: AdvisorManager? = null
     if (StringUtils.isNotEmpty(propDef)) {
         PropertyLoader.load(propDef)
-        enableWeb = PropertyLoader.getBooleanProperty("enable-web", false)
     }
     val scannedPackages = ArrayList<String>()
     scannedPackages.add(packageName)

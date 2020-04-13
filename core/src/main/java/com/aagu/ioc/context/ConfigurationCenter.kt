@@ -10,8 +10,6 @@ import com.aagu.ioc.util.PropertyLoader
  * 在此处理各模块的自动配置
  */
 class ConfigurationCenter(private val context: PropertiesApplicationContext) {
-    val DATA_SUPOORT_CONFIGURER = "com.aagu.data.DataAutoConfigurer"
-
     private val autoConfigurers = ArrayList<AutoConfigurer>()
 
     init {
@@ -19,7 +17,11 @@ class ConfigurationCenter(private val context: PropertiesApplicationContext) {
             autoConfigurers.add(AopAutoConfigurer())
         }
         if (PropertyLoader.getBooleanProperty("enable-data", false)) {
-            val configurer = Class.forName(DATA_SUPOORT_CONFIGURER).newInstance() as AutoConfigurer
+            val configurer = Class.forName(DATA_SUPPORT_CONFIGURER).newInstance() as AutoConfigurer
+            autoConfigurers.add(configurer)
+        }
+        if (PropertyLoader.getBooleanProperty("enable-web", false)) {
+            val configurer = Class.forName(MVC_SUPPORT_CONFIGURER).newInstance() as AutoConfigurer
             autoConfigurers.add(configurer)
         }
     }
@@ -50,5 +52,10 @@ class ConfigurationCenter(private val context: PropertiesApplicationContext) {
 
         override fun afterContextRefresh(context: PropertiesApplicationContext) {
         }
+    }
+
+    companion object {
+        const val DATA_SUPPORT_CONFIGURER = "com.aagu.data.DataAutoConfigurer"
+        const val MVC_SUPPORT_CONFIGURER = "com.aagu.mvc.MvcAutoConfigurer"
     }
 }

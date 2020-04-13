@@ -18,6 +18,7 @@ class DefaultAopProxyFactory: AopProxyFactory {
     }
 
     private fun shouldUseJdkDynamicProxy(bean: Any, beanName: String): Boolean {
-        return false
+        val clazz = bean.javaClass
+        return clazz.isInterface
     }
 }

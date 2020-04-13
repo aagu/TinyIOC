@@ -4,8 +4,11 @@ import com.aagu.aop.advice.*
 import com.aagu.aop.advisor.Advisor
 import com.aagu.aop.advisor.PointcutAdvisor
 import com.aagu.aop.proxy.AopAdviceChainInvocation
+import com.aagu.aop.proxy.AopProxy
 import com.aagu.ioc.factory.BeanFactory
 import java.lang.reflect.Method
+import java.util.*
+import kotlin.collections.ArrayList
 
 class AopProxyUtils {
     companion object {
@@ -68,6 +71,15 @@ class AopProxyUtils {
                 ExceptionAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), advisor.getAdviceMethodName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
             }
             throw RuntimeException("无法创建Advice包装对象，未知Advice类型!")
+        }
+
+        fun equalsInProxy(aopProxy: AopProxy, otherProxy: AopProxy): Boolean {
+            return (aopProxy == otherProxy ||
+                    (equalsProxiedInterfaces(aopProxy, otherProxy)))
+        }
+
+        fun equalsProxiedInterfaces(aopProxy: AopProxy, otherProxy: AopProxy): Boolean {
+            return Arrays.equals(aopProxy.getTarget().javaClass.interfaces, otherProxy.getTarget().javaClass.interfaces)
         }
     }
 }

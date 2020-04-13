@@ -2,6 +2,7 @@ package com.aagu.ioc.util
 
 import com.aagu.ioc.annotation.*
 import com.aagu.ioc.bean.*
+import com.aagu.ioc.exception.IllegalBeanDefinitionException
 import com.aagu.ioc.exception.PropertyNotFoundException
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
@@ -10,7 +11,7 @@ object BeanUtils {
     fun registerBeanDefinition(clazz: Class<*>, registry: BeanDefinitionRegistry) {
         val atBean = clazz.getAnnotation(Bean::class.java)
         val beanName = processBeanNameByClass(atBean, clazz)
-        val beanDef = GeneralBeanDefinition()
+        val beanDef = WireableBeanDefinition()
         beanDef.setBeanClass(clazz)
         processScope(atBean, beanDef)
         processInitAndDestroy(clazz, beanDef)
@@ -42,7 +43,7 @@ object BeanUtils {
         }
     }
 
-    private fun processBeanNameByClass(atBean: Bean, clazz: Class<*>): String {
+    fun processBeanNameByClass(atBean: Bean, clazz: Class<*>): String {
         var beanName = atBean.beanName
         if (StringUtils.isEmpty(beanName)) {
             beanName = clazz.simpleName
@@ -50,7 +51,7 @@ object BeanUtils {
         return StringUtils.lowerCaseFirstChar(beanName)
     }
 
-    private fun processScope(atBean: Bean, beanDef: GeneralBeanDefinition) {
+    private fun processScope(atBean: Bean, beanDef: AbstractBeanDefinition) {
         val scope = atBean.scope
         if (scope == BeanDefinition.SCOPE_PROTOTYPE) {
             beanDef.setScope(BeanDefinition.SCOPE_PROTOTYPE)
@@ -59,7 +60,7 @@ object BeanUtils {
         }
     }
 
-    private fun processInitAndDestroy(clazz: Class<*>, beanDef: GeneralBeanDefinition) {
+    private fun processInitAndDestroy(clazz: Class<*>, beanDef: AbstractBeanDefinition) {
         val methods = clazz.methods
         for (method in methods) {
             if (method.isAnnotationPresent(InitMethod::class.java)) {
@@ -71,14 +72,18 @@ object BeanUtils {
         }
     }
 
-    private fun processProperties(clazz: Class<*>, beanDef: GeneralBeanDefinition) {
+    private fun processProperties(clazz: Class<*>, beanDef: AbstractBeanDefinition) {
         val fields = clazz.declaredFields
         val propertyList = ArrayList<PropertyValue>()
         for (field in fields) {
             if (field.isAnnotationPresent(Wire::class.java)) {
-                val targetClass = field.type
-//                if (targetClass.`package`.name != packageName) continue
-                propertyList.add(PropertyValue(field.name, BeanReference(StringUtils.lowerCaseFirstChar(targetClass.simpleName))))
+                if (beanDef is WireableBeanDefinition) {
+                    val targetClass = field.type
+                    beanDef.addWireProperty(PropertyValue(field.name, BeanReference(StringUtils.lowerCaseFirstChar(targetClass.simpleName))))
+                } else {
+                    throw IllegalBeanDefinitionException("unable to process @Wire annotation" +
+                            " with incompatible bean definition ${beanDef.javaClass}")
+                }
             }
             if (field.isAnnotationPresent(Value::class.java)) {
                 val anno = field.getAnnotation(Value::class.java)
@@ -114,34 +119,25 @@ object BeanUtils {
     private fun takeCareConstructor(
         clazz: Class<*>,
         beanName: String,
-        beanDef: GeneralBeanDefinition
+        beanDef: AbstractBeanDefinition
     ) {
         val constructors = clazz.declaredConstructors
-        var args = beanDef.getConstructorArgumentValues()
-        var constructor: Constructor<*>? = null
+        var constructor: Constructor<*> = constructors[0]
 
-        if (args == null) {
-            args = arrayOfNulls<Class<*>>(0)
-        }
         for (c in constructors) {
-            if (c.parameterCount == args.size) {
-                if (args.isNotEmpty()) {
-                    if (findConstructorWithArgs(c, args)) {
-                        constructor = c
-                        break
-                    }
-                } else {
-                    constructor = c
-                }
+            if (c.parameterCount == 0) {
+                constructor = c
             }
         }
 
-        if (constructor != null) {
-            constructor.isAccessible = true
-            beanDef.setConstructor(constructor)
-        } else {
-            throw NoSuchMethodException("在 $beanName 的定义 ${beanDef.getBeanClass()} 中找不到入参为 $args 的构造函数")
+        if (constructor.parameterCount > 0) {
+            beanDef.setConstructorArguments(constructor.parameterTypes)
         }
+        constructor.isAccessible = true
+        beanDef.setConstructor(constructor)
+//        } else {
+//            throw NoSuchMethodException("在 $beanName 的定义 ${beanDef.getBeanClass()} 中找不到入参为 $args 的构造函数")
+//        }
     }
 
     private fun findConstructorWithArgs(constructor: Constructor<*>, args: Array<*>): Boolean {

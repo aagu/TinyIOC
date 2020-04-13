@@ -17,6 +17,10 @@ class AdvisorAutoProxyCreator(private val beanFactory: BeanFactory): BeanPostPro
         return advisors
     }
 
+    override fun getPriority(): Int {
+        return 8;
+    }
+
     override fun postProcessAfterInitialization(beanName: String, bean: Any): Any {
         val matchedAdvisors = getMatchedAdvisor(bean, beanName)
         var localBean = bean

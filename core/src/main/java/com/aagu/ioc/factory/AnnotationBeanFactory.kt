@@ -2,7 +2,10 @@ package com.aagu.ioc.factory
 
 import com.aagu.ioc.annotation.Bean
 import com.aagu.ioc.annotation.Config
+import com.aagu.ioc.bean.BeanPostProcessor
+import com.aagu.ioc.bean.BeanReference
 import com.aagu.ioc.bean.FactoryBeanDefinition
+import com.aagu.ioc.bean.WireableBeanDefinition
 import com.aagu.ioc.exception.BeanNotFoundException
 import com.aagu.ioc.util.BeanUtils
 import com.aagu.ioc.util.PackageScanner
@@ -20,7 +23,7 @@ class AnnotationBeanFactory(private val packageNames: List<String>): AbstractBea
         val beanAnnotationFilter = object :PackageScanner.Filter {
             override fun onFilter(clazz: Class<*>) {
                 if (clazz.isAnnotationPresent(Bean::class.java)) {
-                    BeanUtils.registerBeanDefinition(clazz,  this@AnnotationBeanFactory)
+                    BeanUtils.registerBeanDefinition(clazz, this@AnnotationBeanFactory)
                 }
             }
         }
@@ -38,6 +41,26 @@ class AnnotationBeanFactory(private val packageNames: List<String>): AbstractBea
                 }
             }
         }
+        registerBeanPostProcessor(object : BeanPostProcessor {
+            override fun getPriority(): Int {
+                return 10
+            }
+
+            override fun postProcessAfterInitialization(beanName: String, bean: Any): Any {
+                val definition = getBeanDefinition(beanName)
+                if (definition is WireableBeanDefinition) {
+                    if (definition.getWireProperties().isNotEmpty()) {
+                        val clazz = bean.javaClass
+                        for (pv in definition.getWireProperties()) {
+                            val field = clazz.getDeclaredField(pv.name)
+                            field.isAccessible = true
+                            field.set(bean, doGetBean((pv.value as BeanReference).getBeanName()))
+                        }
+                    }
+                }
+                return bean
+            }
+        })
         scanner.addFilter(beanAnnotationFilter)
         scanner.addFilter(configAnnotationFilter)
         scanner.addFilter(interfaceFilter)
@@ -93,12 +116,12 @@ class AnnotationBeanFactory(private val packageNames: List<String>): AbstractBea
                         val factoryBeanClass = getBean<Any>(def.value.getFactoryBeanName()!!)::class.java
                         val factoryConstructorArgs: Array<*>? = def.value.getConstructorArgumentValues()
                         factoryMethod = if (factoryConstructorArgs == null) {
-                            factoryBeanClass.getMethod(def.value.getFactoryMethodName())
+                            factoryBeanClass.getMethod(def.value.getFactoryMethodName()!!)
                         } else {
                             val typedArgs = factoryConstructorArgs.map {
                                     value -> if (value == null) null else value::class.java
                             }.toTypedArray()
-                            factoryBeanClass.getMethod(def.value.getFactoryMethodName(), *typedArgs)
+                            factoryBeanClass.getMethod(def.value.getFactoryMethodName()!!, *typedArgs)
                         }
                         factoryMethod?.let {
                             // cache it

@@ -1,15 +1,21 @@
 package com.aagu.ioc.factory
 
+import com.aagu.ioc.annotation.Bean
 import com.aagu.ioc.bean.*
 import com.aagu.ioc.exception.BeanDefinitionNotFoundException
 import com.aagu.ioc.exception.BeanNotFoundException
 import com.aagu.ioc.exception.DuplicateBeanDefinitionException
 import com.aagu.ioc.exception.IllegalBeanDefinitionException
+import com.aagu.ioc.util.BeanUtils
 import com.aagu.ioc.util.StringUtils
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
+import java.util.*
 import java.util.Collections.synchronizedList
+import java.util.Collections.synchronizedSet
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
 abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
     protected val beanDefinitionMap = ConcurrentHashMap<String, BeanDefinition>(256)
@@ -18,7 +24,7 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
     private val buildingBeans = ThreadLocal<HashSet<String>>().apply {
         set(HashSet())
     }
-    private val beanPostProcessors = synchronizedList(ArrayList<BeanPostProcessor>())
+    private val beanPostProcessors = synchronizedSet(TreeSet<BeanPostProcessor>())
     private val factoryPostProcessor = synchronizedList(ArrayList<FactoryPostProcessor>())
 
     override fun <T> getBean(name: String): T {
@@ -77,7 +83,7 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
             if (beanDefinition.isSingleton() && StringUtils.isNotEmpty(beanDefinition.getDestroyMethodName())) {
                 val instance = beanMap[beanName] ?: continue
                 try {
-                    val method = instance.javaClass.getMethod(beanDefinition.getDestroyMethodName())
+                    val method = instance.javaClass.getMethod(beanDefinition.getDestroyMethodName()!!)
                     method.invoke(instance)
                 } catch (e: NoSuchMethodException) {
                     e.printStackTrace()
@@ -210,7 +216,23 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
     }
 
     private fun getConstructorArgumentValues(definition: BeanDefinition): Array<*> {
-        return getRealValues(definition.getConstructorArgumentValues())
+        val args = definition.getConstructorArgumentValues()
+        if (args.isNullOrEmpty()) return arrayOfNulls<Any>(0)
+        val processed = arrayOfNulls<Any>(args.size)
+        for ((idx, arg) in args.withIndex()) {
+            if (arg is Class<*>) {
+                if (arg.isAnnotationPresent(Bean::class.java)) {
+                    processed[idx] =
+                        BeanReference(BeanUtils.processBeanNameByClass(arg.javaClass.getAnnotation(Bean::class.java), arg.javaClass))
+                } else {
+                    processed[idx] =
+                        BeanReference(StringUtils.lowerCaseFirstChar(arg.simpleName))
+                }
+            } else {
+                processed[idx] = args[idx]
+            }
+        }
+        return getRealValues(processed)
     }
 
     private fun getRealValues(defs: Array<*>?): Array<*> {

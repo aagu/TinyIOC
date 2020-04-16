@@ -4,60 +4,40 @@ import com.aagu.data.annotation.Delete
 import com.aagu.data.annotation.Insert
 import com.aagu.data.annotation.Select
 import com.aagu.data.annotation.Update
-import com.aagu.data.connection.ConnectPool
+import com.aagu.data.connection.DataSource
 import com.aagu.data.proxy.Command
 import com.aagu.data.proxy.RepositoryMethod
 import com.aagu.data.proxy.RepositoryProxyFactory
 import com.aagu.data.util.SqlUtils
 import com.aagu.ioc.annotation.Bean
-import com.aagu.ioc.annotation.DestroyMethod
-import com.aagu.ioc.annotation.InitMethod
-import com.aagu.ioc.annotation.Value
+import com.aagu.ioc.annotation.Wire
 import java.lang.reflect.Method
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.sql.Connection
 import java.sql.ResultSet
-import java.util.concurrent.LinkedBlockingQueue
 
 @Bean
 class SessionFactory private constructor(){
-    private lateinit var pool : ConnectPool
-    private val waitingQueue = LinkedBlockingQueue<String>()
 
-    @Value("#{dataSourceUrl}")
-    private lateinit var dataSourceUrl: String
-
-    @Value("#{dataSourceDriver}")
-    private lateinit var dataSourceDriver: String
-
-    @Value("#{dataSourceUser")
-    private var dataSourceUser: String? = null
-
-    @Value("#{dataSourcePassword")
-    private var dataSourcePassword: String? = null
-
-    @InitMethod
-    fun init() {
-        pool = ConnectPool.getInstance(dataSourceDriver, dataSourceUrl, dataSourceUser, dataSourcePassword)
-        pool.createPool()
-    }
+    @Wire
+    private lateinit var dataSource: DataSource
 
     fun query(sql: String, args: Map<String, Any>): ResultSet {
-        val conn: Connection = pool.getConnection()
+        val conn: Connection = dataSource.getConnection()
         val parsedSql = SqlUtils.prepareSql(sql, args)
         val stmt = conn.prepareStatement(parsedSql)
         val res = stmt.executeQuery()
-        pool.freeConnection(conn)
+        dataSource.freeConnection(conn)
         return res
     }
 
     fun execute(sql: String, args: Map<String, Any>): Int {
-        val conn: Connection = pool.getConnection()
+        val conn: Connection = dataSource.getConnection()
         val parsedSql = SqlUtils.prepareSql(sql, args)
         val stmt = conn.prepareStatement(parsedSql)
         val res = stmt.executeUpdate()
-        pool.freeConnection(conn)
+        dataSource.freeConnection(conn)
         return res
     }
 
@@ -108,13 +88,5 @@ class SessionFactory private constructor(){
         }
 
         return Void::class.java
-    }
-
-
-    @DestroyMethod
-    fun close() {
-        if (::pool.isInitialized) {
-            pool.shutDownPool()
-        }
     }
 }

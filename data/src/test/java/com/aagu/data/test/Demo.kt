@@ -14,6 +14,12 @@ class Demo : TinyIocApplication() {
 //        val res = sessionFactory.query("SELECT id, first_name, last_name from user")
 
         val service = getBean(Service::class.java)
+        println("--query--")
+        service.doWork()
+        println("--modify--")
+        service.modify()
+        println("userDao.add(\"xin\", \"wang\")")
+        println("--query again--")
         service.doWork()
 
 //        val thisClazz = this::class.java

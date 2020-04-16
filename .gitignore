@@ -1,2 +1,4 @@
 /core/target/**
 /data/target/**
+/mvc/target/**
+/web/target/**

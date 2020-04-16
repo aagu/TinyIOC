@@ -105,6 +105,7 @@ object Processor {
             // 优先选择无参构方法
             if (cons.parameterCount == 0) {
                 constructor = cons
+                break
             }
         }
 

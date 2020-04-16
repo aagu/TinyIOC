@@ -10,7 +10,7 @@ class RepositoryProxyFactory<T>(private val repositoryInterface: Class<T>) {
     private val methodCache = ConcurrentHashMap<Method, RepositoryMethod>()
 
     @Suppress("UNCHECKED_CAST")
-    protected fun newInstance(repositoryProxy: RepositoryProxy<T>): T {
+    private fun newInstance(repositoryProxy: RepositoryProxy<T>): T {
         return Proxy.newProxyInstance(repositoryInterface.classLoader,
             arrayOf(repositoryInterface), repositoryProxy) as T
     }

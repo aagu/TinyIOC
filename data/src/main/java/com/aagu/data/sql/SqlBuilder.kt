@@ -17,7 +17,10 @@ class SqlBuilder(private val sql: String) {
         for (part in sqlParts) {
             if (part is StaticSqlPart) builder.append(part.value)
             else if (part is VariableSqlPart){
-                val realValue = args[part.placeHolder]
+                var realValue: Any? = args[part.placeHolder]
+                if (realValue == null) {
+                    realValue = args[part.getIndexedArgName()]
+                }
                 varIdx++
                 builder.append(realValue.toString())
             }
@@ -33,6 +36,8 @@ class SqlBuilder(private val sql: String) {
         var state = 0
 
         val builder = StringBuilder()
+
+        var varIdx = 0
 
         for (i in chars.indices) {
             when {
@@ -53,7 +58,7 @@ class SqlBuilder(private val sql: String) {
                 else -> {
                     if (state == 2) {
                         // variable end
-                        sqlParts.add(VariableSqlPart(builder.toString()))
+                        sqlParts.add(VariableSqlPart(builder.toString(), varIdx++))
                         state = 0
                         builder.setLength(0) // clear it
                     }
@@ -65,7 +70,7 @@ class SqlBuilder(private val sql: String) {
         if (builder.isNotEmpty()) {
             if (state == 2) {
                 // variable end
-                sqlParts.add(VariableSqlPart(builder.toString()))
+                sqlParts.add(VariableSqlPart(builder.toString(), varIdx))
                 builder.setLength(0) // clear it
             } else if (state == 0) {
                 sqlParts.add(StaticSqlPart(builder.toString()))

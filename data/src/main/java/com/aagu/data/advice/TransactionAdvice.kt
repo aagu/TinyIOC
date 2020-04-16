@@ -3,6 +3,7 @@ package com.aagu.data.advice
 import com.aagu.aop.advice.ProceedJointPoint
 import com.aagu.aop.annotation.Around
 import com.aagu.aop.annotation.Aspect
+import com.aagu.aop.annotation.Order
 import com.aagu.data.connection.DataSource
 import com.aagu.data.transaction.TransactionManager
 import com.aagu.data.transaction.support.SimpleTransactionDefinition
@@ -18,6 +19,7 @@ class TransactionAdvice: BeanFactoryAware {
     private lateinit var dataSource: DataSource
 
     @Around("@annotation(com.aagu.data.annotation.Transactional)")
+    @Order(0)
     fun doTransaction(proceedJointPoint: ProceedJointPoint): Any? {
         if (!::transactionManager.isInitialized) {
             transactionManager = factory.getBean("transactionManager")

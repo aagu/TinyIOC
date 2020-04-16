@@ -14,7 +14,7 @@ class SessionManager : FactoryPostProcessor, PackageScanner.Filter {
         for (clazz in daoClasses) {
             val beanName = clazz.simpleName
             val beanDefinition = FactoryBeanDefinition()
-            beanDefinition.setFactoryBeanName("SessionFactory")
+            beanDefinition.setFactoryBeanName("sessionFactory")
             beanDefinition.setFactoryMethodName("getRepository")
             beanDefinition.setConstructorArguments(arrayOf(clazz))
             beanDefinition.allowGenericType = true

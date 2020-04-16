@@ -3,7 +3,9 @@ package com.aagu.aop.proxy
 import com.aagu.aop.advisor.Advisor
 import com.aagu.aop.util.AopProxyUtils
 import com.aagu.ioc.bean.BeanDefinitionRegistry
+import com.aagu.ioc.bean.BeanReference
 import com.aagu.ioc.factory.BeanFactory
+import com.aagu.ioc.util.BeanUtils
 import net.sf.cglib.proxy.Enhancer
 import net.sf.cglib.proxy.MethodInterceptor
 import net.sf.cglib.proxy.MethodProxy
@@ -38,7 +40,9 @@ class CglibDynamicAopProxy(
             enhancer.create()
         } else {
             val bd = (beanFactory as BeanDefinitionRegistry).getBeanDefinition(beanName)
-            enhancer.create(bd.getConstructor()!!.parameterTypes, bd.getConstructorArgumentValues())
+            val types = bd.getConstructor()!!.parameterTypes
+            val values = BeanUtils.getConstructorArgumentValues(bd)
+            enhancer.create(types, getRealValues(values))
         }
     }
 
@@ -61,6 +65,21 @@ class CglibDynamicAopProxy(
 
     override fun hashCode(): Int {
         return CglibDynamicAopProxy::class.java.hashCode() * 13 + target.hashCode()
+    }
+
+    private fun getRealValues(defs: Array<*>?): Array<*> {
+        if (defs.isNullOrEmpty()) return arrayOfNulls<Any>(0)
+        val actualValues = arrayOfNulls<Any>(defs.size)
+        var value: Any?
+        for (i in defs.indices) {
+            value = when {
+                defs[i] == null -> null
+                defs[i] is BeanReference -> beanFactory.getBean((defs[i] as BeanReference).getBeanName())
+                else -> defs[i]
+            }
+            actualValues[i] = value
+        }
+        return actualValues
     }
 
     companion object {

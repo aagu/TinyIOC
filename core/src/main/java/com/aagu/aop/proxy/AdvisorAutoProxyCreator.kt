@@ -33,7 +33,7 @@ class AdvisorAutoProxyCreator(private val beanFactory: BeanFactory): BeanPostPro
     private fun getMatchedAdvisor(bean: Any, beanName: String): List<Advisor> {
         if (advisors.isEmpty()) return emptyList()
         val beanClass = bean.javaClass
-        val methods = beanClass.methods
+        val methods = beanClass.declaredMethods
         val matchedAdvisors = ArrayList<Advisor>()
         for (ad in advisors) {
             if (ad is PointcutAdvisor) {

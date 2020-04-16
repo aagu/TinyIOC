@@ -14,7 +14,7 @@ interface BeanDefinition {
     fun getFactoryMethodName(): String?
     fun getInitMethodName(): String?
     fun getDestroyMethodName(): String?
-    fun getConstructorArgumentValues(): Array<*>?
+    fun getConstructorArguments(): Array<*>?
     fun getConstructor(): Constructor<*>?
     fun setConstructor(constructor: Constructor<*>)
     fun getFactoryMethod(): Method?

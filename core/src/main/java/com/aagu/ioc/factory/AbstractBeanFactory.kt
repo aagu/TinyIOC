@@ -1,12 +1,11 @@
 package com.aagu.ioc.factory
 
-import com.aagu.ioc.annotation.Bean
 import com.aagu.ioc.bean.*
 import com.aagu.ioc.exception.BeanDefinitionNotFoundException
 import com.aagu.ioc.exception.BeanNotFoundException
 import com.aagu.ioc.exception.DuplicateBeanDefinitionException
 import com.aagu.ioc.exception.IllegalBeanDefinitionException
-import com.aagu.ioc.util.BeanUtils
+import com.aagu.ioc.util.BeanUtils.getConstructorArgumentValues
 import com.aagu.ioc.util.StringUtils
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
@@ -176,28 +175,28 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
 
     private fun doInit(definition: BeanDefinition, instance: Any) {
         if (StringUtils.isNotEmpty(definition.getInitMethodName())) {
-            val method = instance.javaClass.getMethod(definition.getInitMethodName())
+            val method = instance.javaClass.getMethod(definition.getInitMethodName()!!)
             method.invoke(instance)
         }
     }
 
     private fun createInstanceByFactoryBean(definition: BeanDefinition): Any {
         val factory = doGetBean<Any>(definition.getFactoryBeanName()!!)
-        val args = getRealValues(definition.getConstructorArgumentValues())
+        val args = getRealValues(definition.getConstructorArguments())
         val method = determineFactoryMethod(definition, args, factory.javaClass)
         return method.invoke(factory, *args)
     }
 
     private fun createInstanceByStaticFactoryMethod(definition: BeanDefinition): Any {
         val clazz = definition.getBeanClass()!!
-        val args = getRealValues(definition.getConstructorArgumentValues())
+        val args = getRealValues(definition.getConstructorArguments())
         val method = determineFactoryMethod(definition, args, null)
         return method.invoke(clazz, *args)
     }
 
     private fun createInstanceByConstructor(definition: BeanDefinition): Any {
         try {
-            val args = getConstructorArgumentValues(definition)
+            val args = getRealValues(getConstructorArgumentValues(definition))
             val constructor = definition.getConstructor()
             return if (constructor != null) {
                 if (args.isEmpty()) {
@@ -213,26 +212,6 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
             println("创建 ${definition.getBeanClass()} 实例异常 ${e.message}")
             throw e
         }
-    }
-
-    private fun getConstructorArgumentValues(definition: BeanDefinition): Array<*> {
-        val args = definition.getConstructorArgumentValues()
-        if (args.isNullOrEmpty()) return arrayOfNulls<Any>(0)
-        val processed = arrayOfNulls<Any>(args.size)
-        for ((idx, arg) in args.withIndex()) {
-            if (arg is Class<*>) {
-                if (arg.isAnnotationPresent(Bean::class.java)) {
-                    processed[idx] =
-                        BeanReference(BeanUtils.processBeanNameByClass(arg.javaClass.getAnnotation(Bean::class.java), arg.javaClass))
-                } else {
-                    processed[idx] =
-                        BeanReference(StringUtils.lowerCaseFirstChar(arg.simpleName))
-                }
-            } else {
-                processed[idx] = args[idx]
-            }
-        }
-        return getRealValues(processed)
     }
 
     private fun getRealValues(defs: Array<*>?): Array<*> {
@@ -303,7 +282,7 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
             }
             return m
         } else {
-            throw Exception("不存在对应的构造方法！$definition")
+            throw IllegalBeanDefinitionException("不存在对应的构造方法！$definition")
         }
     }
 

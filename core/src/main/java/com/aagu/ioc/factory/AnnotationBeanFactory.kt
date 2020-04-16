@@ -103,9 +103,14 @@ class AnnotationBeanFactory(private val packageNames: List<String>): AbstractBea
         val result = ArrayList<String>()
         for (def in beanDefs) {
             val k = def.key
+            if (StringUtils.lowerCaseFirstChar(clazz.simpleName) == k) {
+                return arrayListOf(k)
+            }
             val v = def.value.getBeanClass()
             if (v != null) {
-                if (clazz.isAssignableFrom(v)) result.add(k)
+                if (BeanUtils.isAssignableFrom(clazz, v)) {
+                    result.add(k)
+                }
             } else {
                 //try factory construction
                 var factoryMethod = def.value.getFactoryMethod()
@@ -114,7 +119,7 @@ class AnnotationBeanFactory(private val packageNames: List<String>): AbstractBea
                     factoryMethodName?.let {
                         //if factory method name is not empty, then we can get factory bean name
                         val factoryBeanClass = getBean<Any>(def.value.getFactoryBeanName()!!)::class.java
-                        val factoryConstructorArgs: Array<*>? = def.value.getConstructorArgumentValues()
+                        val factoryConstructorArgs: Array<*>? = def.value.getConstructorArguments()
                         factoryMethod = if (factoryConstructorArgs == null) {
                             factoryBeanClass.getMethod(def.value.getFactoryMethodName()!!)
                         } else {

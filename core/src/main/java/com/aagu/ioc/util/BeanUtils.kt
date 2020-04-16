@@ -20,6 +20,18 @@ object BeanUtils {
         registry.registerBeanDefinition(beanName, beanDef)
     }
 
+    fun isAssignableFrom(target: Class<*>, source: Class<*>): Boolean {
+        if (!target.isInterface) {
+            return target.isAssignableFrom(source)
+        } else {
+            val interfaces = source.interfaces
+            for (interf in interfaces) {
+                if (interf == target) return true
+            }
+            return target == source
+        }
+    }
+
     fun registerConfig(clazz: Class<*>, registry: BeanDefinitionRegistry) {
         // 首先把Config注册成bean
         val configName = clazz.simpleName
@@ -49,6 +61,26 @@ object BeanUtils {
             beanName = clazz.simpleName
         }
         return StringUtils.lowerCaseFirstChar(beanName)
+    }
+
+    fun getConstructorArgumentValues(definition: BeanDefinition): Array<*> {
+        val args = definition.getConstructorArguments()
+        if (args.isNullOrEmpty()) return arrayOfNulls<Any>(0)
+        val processed = arrayOfNulls<Any>(args.size)
+        for ((idx, arg) in args.withIndex()) {
+            if (arg is Class<*>) {
+                if (arg.isAnnotationPresent(Bean::class.java)) {
+                    processed[idx] =
+                        BeanReference(processBeanNameByClass(arg.getAnnotation(Bean::class.java), arg))
+                } else {
+                    processed[idx] =
+                        BeanReference(StringUtils.lowerCaseFirstChar(arg.simpleName))
+                }
+            } else {
+                processed[idx] = args[idx]
+            }
+        }
+        return processed
     }
 
     private fun processScope(atBean: Bean, beanDef: AbstractBeanDefinition) {

@@ -39,7 +39,7 @@ abstract class AbstractBeanDefinition :BeanDefinition {
         this.destroyMethodName = methodName
     }
 
-    override fun getConstructorArgumentValues(): Array<*>? {
+    override fun getConstructorArguments(): Array<*>? {
         return constructorArguments
     }
 

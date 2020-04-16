@@ -1,6 +1,6 @@
 package com.aagu.aop.util
 
-import com.aagu.aop.advice.*
+import com.aagu.aop.advice.AdviceWrapper
 import com.aagu.aop.advisor.Advisor
 import com.aagu.aop.advisor.PointcutAdvisor
 import com.aagu.aop.proxy.AopAdviceChainInvocation
@@ -45,32 +45,13 @@ object AopProxyUtils {
         for (ad in matchedAdvisors) {
             if (ad is PointcutAdvisor) {
                 if (ad.getPointcut().matchMethod(method, clazz)) {
-                    val adviceWrapper = createAdviceWrapper(ad, beanFactory)
+                    val adviceWrapper = AdviceWrapper(ad, beanFactory.getBean(ad.getAdviceBeanName()))
                     advices.add(adviceWrapper)
                 }
             }
         }
+        advices.sort()
         return advices
-    }
-
-    private fun createAdviceDelegate(advisor: Advisor, beanFactory: BeanFactory): AdviceDelegate {
-        when (val adviceType = advisor.getAdviceType()) {
-            AfterAdvice::class.java -> return AdviceDelegate(advisor.getAdviceBeanName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
-            AroundAdvice::class.java -> return AdviceDelegate(advisor.getAdviceBeanName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
-            BeforeAdvice::class.java -> return AdviceDelegate(advisor.getAdviceBeanName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
-            ExceptionAdvice::class.java -> return AdviceDelegate(advisor.getAdviceBeanName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
-        }
-        throw RuntimeException("无法创建Advice代理对象，未知Advice类型!")
-    }
-
-    private fun createAdviceWrapper(advisor: Advisor, beanFactory: BeanFactory): AdviceWrapper {
-        when (val adviceType = advisor.getAdviceType()) {
-            AfterAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), advisor.getAdviceMethodName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
-            AroundAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), advisor.getAdviceMethodName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
-            BeforeAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), advisor.getAdviceMethodName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
-            ExceptionAdvice::class.java -> return AdviceWrapper(advisor.getAdviceBeanName(), advisor.getAdviceMethodName(), beanFactory.getBean(advisor.getAdviceBeanName()), adviceType)
-        }
-        throw RuntimeException("无法创建Advice包装对象，未知Advice类型!")
     }
 
     fun equalsInProxy(aopProxy: AopProxy, otherProxy: AopProxy): Boolean {

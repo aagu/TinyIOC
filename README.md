@@ -83,6 +83,6 @@
 
 目前仅支持注解方式的AOP使用，标记`@Aspect`的类将被识别为切面定义。
 目前支持前置、后置、环绕和异常四种切点定义，分别使用`@Before`、`@After`、`@Around`和`@AfterThrow`标记，并为expression参数传入AspectJ形式的匹配语法。
-方法名没有限定，前置、后置和异常切点入参为`JointPoint`类，环绕切点入参为`ProceedJointPoint`。
+方法名没有限定，前置、后置和异常切点入参为`JointPoint`类，环绕切点入参为`ProceedJointPoint`。通过`@Order`注解添加切面顺序，数字越小优先级越高，默认为0
 
 ！！！注意：AOP默认关闭，需要在property中加入`enable-aop = true`手动开启

@@ -48,7 +48,7 @@ class AdvisorManager: AdvisorRegistry, FactoryPostProcessor, PackageScanner.Filt
 
     private fun processAdviceMethod(beanName: String, method: Method) {
         var expression = ""
-        var adviceType: Class<*> = Advice::class.java
+        var adviceType: Class<out Advice> = Advice::class.java
         when {
             method.isAnnotationPresent(Before::class.java) -> {
                 expression = method.getAnnotation(Before::class.java).expression
@@ -68,7 +68,12 @@ class AdvisorManager: AdvisorRegistry, FactoryPostProcessor, PackageScanner.Filt
             }
         }
         if (expression.isNotEmpty()) {
-            registerAdvisor(AspectJPointcutAdvisor(beanName, method.name, expression, adviceType))
+            val order = if (method.isAnnotationPresent(Order::class.java)) {
+                method.getAnnotation(Order::class.java).value
+            } else {
+                0
+            }
+            registerAdvisor(AspectJPointcutAdvisor(beanName, method.name, expression, adviceType, order))
         }
     }
 }

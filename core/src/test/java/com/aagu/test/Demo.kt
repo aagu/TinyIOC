@@ -7,15 +7,14 @@ import com.aagu.ioc.runWithAnnotation
 @Application(property = "app-no-data.properties")
 class Demo : TinyIocApplication() {
     override fun run(args: Array<String>) {
-        val bean1 = getBean(Bean1::class.java)
+        val gear = getBean(Gear::class.java)
 
-        bean1.doSomething()
-        bean1.doAnotherThing()
-
-        println(bean1.hashCode())
+        gear.getBean1()
+//        println(gear.toString())
+//        println(gear.whoAmI())
     }
 }
 
-fun main() {
-    runWithAnnotation(Demo::class.java, emptyArray())
+fun main(args: Array<String>) {
+    runWithAnnotation(Demo::class.java, args)
 }

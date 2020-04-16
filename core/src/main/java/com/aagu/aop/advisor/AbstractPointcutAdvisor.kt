@@ -1,14 +1,16 @@
 package com.aagu.aop.advisor
 
+import com.aagu.aop.advice.Advice
 import com.aagu.aop.pointcut.Pointcut
 
 abstract class AbstractPointcutAdvisor(
     private val adviceBeanName: String,
     private val adviceMethodName: String,
     private val expression: String,
-    private val adviceType: Class<*>
+    private val adviceType: Class<out Advice>,
+    private val order: Int
 ): PointcutAdvisor {
-    override fun getAdviceType(): Class<*> {
+    override fun getAdviceType(): Class<out Advice> {
         return adviceType
     }
 
@@ -22,6 +24,10 @@ abstract class AbstractPointcutAdvisor(
 
     override fun getAdviceMethodName(): String {
         return adviceMethodName
+    }
+
+    override fun getOrder(): Int {
+        return order
     }
 
     abstract override fun getPointcut(): Pointcut

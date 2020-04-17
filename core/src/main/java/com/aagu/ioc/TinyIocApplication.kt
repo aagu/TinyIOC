@@ -26,8 +26,9 @@ public inline fun <reified T : TinyIocApplication> runWithAnnotation(clazz: Clas
 
     val instance = clazz.newInstance()
     instance.setBeanContainer(ioc)
-    instance.run(args)
-    ioc.close()
+    ioc.use {
+        instance.run(args)
+    }
 }
 
 public inline fun <reified T: TinyIocApplication> runWithXml(clazz: Class<T>, args: Array<String>) {
@@ -39,8 +40,9 @@ public inline fun <reified T: TinyIocApplication> runWithXml(clazz: Class<T>, ar
     ioc.finalizeInit()
     val instance = clazz.newInstance()
     instance.setBeanContainer(ioc)
-    instance.run(args)
-    ioc.close()
+    ioc.use {
+        instance.run(args)
+    }
 }
 
 abstract class TinyIocApplication {

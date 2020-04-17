@@ -133,6 +133,7 @@ object BeanUtils {
                             propertyList.add(PropertyValue(field.name, value.toInt()))
                         }
                         Long::class.java -> {
+                            if (value.endsWith("L")) value = value.substring(0, value.length - 1)
                             propertyList.add(PropertyValue(field.name, value.toLong()))
                         }
                         Float::class.java -> {

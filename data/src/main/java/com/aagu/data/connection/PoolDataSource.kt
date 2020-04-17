@@ -24,10 +24,26 @@ class PoolDataSource: DataSource {
 
     @Value("#{dataSourcePassword}:null")
     private var dataSourcePassword: String? = null
+    
+    @Value("#{dataSourceTimeOut}:5000L")
+    private var dataSourceTimeout: Long = 1000L
+
+    @Value("#{dataSourceInitConnections}:10")
+    private var initConnections: Int = 10
+
+    @Value("#{dataSourceIncConnections}:5")
+    private var incConnections: Int = 5
+
+    @Value("#{dataSourceMaxConnections}:50")
+    private var maxConnections = 50
 
     @InitMethod
     fun init() {
         pool = ConnectPool.getInstance(dataSourceDriver, dataSourceUrl, dataSourceUser, dataSourcePassword)
+        pool.timeout = dataSourceTimeout
+        pool.initialConnections = initConnections
+        pool.incrementConnections = incConnections
+        pool.maxConnections = maxConnections
         pool.createPool()
     }
 

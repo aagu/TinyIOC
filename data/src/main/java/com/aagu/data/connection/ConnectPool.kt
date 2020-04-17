@@ -1,13 +1,15 @@
 package com.aagu.data.connection
 
+import com.aagu.data.exception.PoolExhaustedException
 import com.aagu.data.exception.PoolNotInitializedException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import java.sql.Connection
 import java.sql.Driver
 import java.sql.DriverManager
 import java.sql.SQLException
-import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
 
 class ConnectPool private constructor(
     private val jdbcDriver: String,
@@ -19,25 +21,26 @@ class ConnectPool private constructor(
     var initialConnections = 10
     var incrementConnections = 5
     var maxConnections = 50
-    private var connections: LinkedList<PooledConnection>? = null
+    var timeout = 1000L
+    private var pooledConnections: CopyOnWriteArrayList<PooledConnection>? = null
 
     fun createPool() {
-        if (connections != null) return
+        if (pooledConnections != null) return
 
         println("creating pool...")
         val driver = Class.forName(jdbcDriver).newInstance() as Driver
         DriverManager.registerDriver(driver)
-        connections = LinkedList()
+        pooledConnections = CopyOnWriteArrayList()
         createConnections(initialConnections)
         println("pool created!")
     }
 
     private fun createConnections(initialConnections: Int) {
         for (i in 0 until initialConnections) {
-            if (maxConnections > 0 && connections!!.size > maxConnections) break
+            if (maxConnections > 0 && pooledConnections!!.size > maxConnections) break
 
             try {
-                connections?.add(PooledConnection(newConnection()))
+                pooledConnections?.add(PooledConnection(newConnection()))
             } catch (ex: SQLException) {
                 println("error in creating connection")
                 throw ex
@@ -49,7 +52,7 @@ class ConnectPool private constructor(
         val conn = DriverManager.getConnection(dbUrl, dbUserName, dbPassword)
 
         // 首次连接，检查数据库允许的最大连接数
-        if (connections!!.size == 0) {
+        if (pooledConnections!!.size == 0) {
             val metaDta = conn.metaData
             val driverMaxConnection = metaDta.maxConnections
 
@@ -60,21 +63,20 @@ class ConnectPool private constructor(
     }
 
     @Throws(SQLException::class, PoolNotInitializedException::class)
-    @Synchronized
-    fun getConnection(): Connection {
-        if (connections == null) throw PoolNotInitializedException()
+    fun getConnection(): Connection = runBlocking {
+        if (pooledConnections == null) throw PoolNotInitializedException()
 
         var conn = getFreeConnection()
 
-        while (conn == null) {
-            runBlocking {
+        val result = withTimeoutOrNull(timeout) {
+            while (conn == null) {
                 delay(250)
+
+                conn = getFreeConnection()
             }
-
-            conn = getFreeConnection()
+            conn
         }
-
-        return conn
+        result?: throw PoolExhaustedException()
     }
 
     private fun getFreeConnection(): Connection? {
@@ -92,7 +94,7 @@ class ConnectPool private constructor(
     private fun findFreeConnection(): Connection? {
         var conn: Connection? = null
 
-        for (connection in connections!!) {
+        for (connection in pooledConnections!!) {
             if (!connection.busy) {
                 conn = connection.connection
                 connection.busy = true
@@ -128,14 +130,14 @@ class ConnectPool private constructor(
     }
 
     fun freeConnection(conn: Connection) {
-        if (connections == null) {
+        if (pooledConnections == null) {
             println("connection pool not exist, could not free connection")
             return
         }
 
-        for (connection in connections!!) {
-            if (connection.connection == conn) {
-                connection.busy = false
+        for (pooledConnection in pooledConnections!!) {
+            if (pooledConnection.connection == conn) {
+                pooledConnection.busy = false
                 break
             }
         }
@@ -144,12 +146,12 @@ class ConnectPool private constructor(
     @Throws(SQLException::class)
     @Synchronized
     fun refreshConnection() {
-        if (connections == null) {
+        if (pooledConnections == null) {
             println("connection pool not exist, could not refresh connections")
             return
         }
 
-        for (connection in connections!!) {
+        for (connection in pooledConnections!!) {
             if (connection.busy) {
                 runBlocking {
                     delay(5000)
@@ -165,22 +167,22 @@ class ConnectPool private constructor(
     @Throws(SQLException::class)
     @Synchronized
     fun shutDownPool() {
-        if (connections == null) {
+        if (pooledConnections == null) {
             println("connection pool not exist, could not shut down")
             return
         }
 
         println("shutting down...")
-        while (connections!!.size > 0) {
-            val connection = connections!!.first
+        while (pooledConnections!!.size > 0) {
+            val connection = pooledConnections!!.first()
             if (connection.busy) {
                 runBlocking { delay(5000) }
                 closeConnection(connection.connection!!)
             }
-            connections!!.remove(connection)
+            pooledConnections!!.remove(connection)
         }
 
-        connections = null
+        pooledConnections = null
         println("shut down")
     }
 

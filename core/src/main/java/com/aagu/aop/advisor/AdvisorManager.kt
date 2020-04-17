@@ -46,6 +46,10 @@ class AdvisorManager: AdvisorRegistry, FactoryPostProcessor, PackageScanner.Filt
         }
     }
 
+    /**
+     * 处理切面定义，解析切面类型，设置切面优先级
+     * 优先级0预留给系统切面（例如注解式事务），没有生命优先级的默认为1
+     */
     private fun processAdviceMethod(beanName: String, method: Method) {
         var expression = ""
         var adviceType: Class<out Advice> = Advice::class.java
@@ -71,7 +75,7 @@ class AdvisorManager: AdvisorRegistry, FactoryPostProcessor, PackageScanner.Filt
             val order = if (method.isAnnotationPresent(Order::class.java)) {
                 method.getAnnotation(Order::class.java).value
             } else {
-                0
+                1
             }
             registerAdvisor(AspectJPointcutAdvisor(beanName, method.name, expression, adviceType, order))
         }

@@ -66,7 +66,7 @@
 ## 数据库设计约定
 要想使用数据库，需要在配置文件中声明`enable-data=true`,并提供数据库Url，Driver，User（可选），Password（可选）
 
-数据库支持的设计思路参考Mybatis，Dao层接口用`@Repository`标识，提供`@Select`，`@Insert`，`@Update`，`@Delete`注解，每种注解需要声明sql语句，暂不支持占位。配合`@Wire`注解自动注入实现类。当然也可以获取`sessionFactory`实例，手动执行sql，返回结果为`ResultSet`。
+数据库支持的设计思路参考Mybatis，Dao层接口用`@Repository`标识，提供`@Select`，`@Insert`，`@Update`，`@Delete`注解，每种注解需要声明sql语句，~~暂不支持占位~~。配合`@Wire`注解自动注入实现类。当然也可以获取`sessionFactory`实例，手动执行sql，返回结果为`ResultSet`。
 
 数据库支持利用`@Transactional`声明事务，目前仅支持将一个方法中的数据库操作纳入一个事务管理，捕获异常自动回滚，否则提交。不支持嵌套事务、事务传播、隔离
 级别定义。当`@Transactional`作用于方法时，该方法将纳入事务管理，当`@Transactional`作用于类时，该类声明的全部公开方法都将纳入事务管理。

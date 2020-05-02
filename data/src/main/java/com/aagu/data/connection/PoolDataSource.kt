@@ -9,7 +9,7 @@ import java.sql.Connection
 @Bean("dataSource")
 class PoolDataSource: DataSource {
     private lateinit var pool : ConnectPool
-    private var transactional: Boolean = false
+    private val transactional: ThreadLocal<Boolean> = ThreadLocal()
 
     private val transactionalConnection = ThreadLocal<Connection?>()
 
@@ -47,16 +47,18 @@ class PoolDataSource: DataSource {
         pool.createPool()
     }
 
-    override fun setTransactional(transactional: Boolean) {
-        this.transactional = transactional
+    override fun setTransactional(transactionalState: Boolean) {
+        transactional.set(transactionalState)
     }
 
     override fun isTransactional(): Boolean {
-        return transactional
+        val v = transactional.get()
+        if (v != null) return v
+        return false
     }
 
     override fun getConnection(): Connection {
-        return if (transactional) {
+        return if (isTransactional()) {
             if (transactionalConnection.get() == null) {
                 transactionalConnection.set(pool.getConnection())
             }
@@ -68,7 +70,7 @@ class PoolDataSource: DataSource {
     }
 
     override fun freeConnection(connection: Connection) {
-        if (!transactional) {
+        if (!isTransactional()) {
             val transactionalCon = transactionalConnection.get()
             if (transactionalCon != null) {
                 pool.freeConnection(transactionalCon)

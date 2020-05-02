@@ -7,7 +7,7 @@ interface DataSource {
 
     fun freeConnection(connection: Connection)
 
-    fun setTransactional(transactional: Boolean)
+    fun setTransactional(transactionalState: Boolean)
 
     fun isTransactional(): Boolean
 }

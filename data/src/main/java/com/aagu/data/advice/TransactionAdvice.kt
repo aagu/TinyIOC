@@ -39,6 +39,7 @@ class TransactionAdvice: BeanFactoryAware {
         try {
             res = proceedJointPoint.proceed()
         } catch (ex: Exception) {
+            ex.printStackTrace()
             transactionManager.rollback(transactionStatus)
             dataSource.setTransactional(false)
             dataSource.freeConnection(con)

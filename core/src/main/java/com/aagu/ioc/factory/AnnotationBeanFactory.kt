@@ -43,7 +43,7 @@ class AnnotationBeanFactory(private val packageNames: List<String>): AbstractBea
         }
         registerBeanPostProcessor(object : BeanPostProcessor {
             override fun getPriority(): Int {
-                return 10
+                return 4
             }
 
             override fun postProcessAfterInitialization(beanName: String, bean: Any): Any {
@@ -52,9 +52,9 @@ class AnnotationBeanFactory(private val packageNames: List<String>): AbstractBea
                     if (definition.getWireProperties().isNotEmpty()) {
                         val clazz = bean.javaClass
                         for (pv in definition.getWireProperties()) {
-                            val field = clazz.getDeclaredField(pv.name)
-                            field.isAccessible = true
-                            field.set(bean, doGetBean((pv.value as BeanReference).getBeanName()))
+                            val field = BeanUtils.getFieldRecursively(clazz, pv.name)
+                            field?.isAccessible = true
+                            field?.set(bean, doGetBean((pv.value as BeanReference).getBeanName()))
                         }
                     }
                 }

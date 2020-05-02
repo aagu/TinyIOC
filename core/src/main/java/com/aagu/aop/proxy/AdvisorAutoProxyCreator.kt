@@ -5,6 +5,7 @@ import com.aagu.aop.advisor.PointcutAdvisor
 import com.aagu.ioc.bean.BeanPostProcessor
 import com.aagu.ioc.factory.BeanFactory
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
 class AdvisorAutoProxyCreator(private val beanFactory: BeanFactory): BeanPostProcessor {
     private lateinit var advisors: ArrayList<Advisor>
@@ -18,7 +19,7 @@ class AdvisorAutoProxyCreator(private val beanFactory: BeanFactory): BeanPostPro
     }
 
     override fun getPriority(): Int {
-        return 8;
+        return 10
     }
 
     override fun postProcessAfterInitialization(beanName: String, bean: Any): Any {
@@ -56,6 +57,10 @@ class AdvisorAutoProxyCreator(private val beanFactory: BeanFactory): BeanPostPro
         }
         for (method in methods) {
             if (pointcut.matchMethod(method, beanClass)) {
+                if ((method.modifiers and Modifier.FINAL) != 0) {
+                    println("${AdvisorAutoProxyCreator::class.java.canonicalName} $method cant be proxied since is final")
+                    return false
+                }
                 return true
             }
         }

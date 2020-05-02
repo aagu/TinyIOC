@@ -5,6 +5,7 @@ import com.aagu.ioc.bean.*
 import com.aagu.ioc.exception.IllegalBeanDefinitionException
 import com.aagu.ioc.exception.PropertyNotFoundException
 import java.lang.reflect.Constructor
+import java.lang.reflect.Field
 import java.lang.reflect.Method
 
 object BeanUtils {
@@ -81,6 +82,24 @@ object BeanUtils {
             }
         }
         return processed
+    }
+
+    /**
+     * Get Java field recursively
+     * @param clazz
+     * @param fieldName name of the field try to get
+     * @return field where field been declared
+     * */
+    fun getFieldRecursively(clazz: Class<*>, fieldName: String): Field? {
+        var cls = clazz;
+        while (cls != Object::class.java) {
+            try {
+                return cls.getDeclaredField(fieldName)
+            } catch (ex: NoSuchFieldException) {
+                cls = cls.superclass
+            }
+        }
+        return null
     }
 
     private fun processScope(atBean: Bean, beanDef: AbstractBeanDefinition) {

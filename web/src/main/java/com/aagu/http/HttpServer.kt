@@ -3,9 +3,11 @@ package com.aagu.http
 import com.aagu.ioc.annotation.Bean
 import com.aagu.ioc.annotation.DestroyMethod
 import com.aagu.ioc.annotation.Value
-import com.aagu.ioc.bean.BeanFactoryAware
-import com.aagu.ioc.factory.AbstractBeanFactory
+import com.aagu.ioc.annotation.Wire
 import com.aagu.mvc.DispatcherServlet
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.net.InetAddress
 import java.net.ServerSocket
@@ -13,12 +15,13 @@ import java.net.SocketException
 import kotlin.system.exitProcess
 
 @Bean
-class HttpServer : BeanFactoryAware {
+class HttpServer {
     @Volatile private var shutDown = false
 
     @Value("#{serverPort}") private var serverPort:Int = 4567
 
-    private lateinit var factory: AbstractBeanFactory
+    @Wire private lateinit var dispatcherServlet:DispatcherServlet
+
     private lateinit var serverSocket: ServerSocket
 
     fun run() {
@@ -30,33 +33,30 @@ class HttpServer : BeanFactoryAware {
             exitProcess(1)
         }
 
-        val dispatcherServlet = factory.getBean(DispatcherServlet::class.java)
-
         while (!shutDown) {
             try {
                 val socket = serverSocket.accept()
-                val ins = socket.getInputStream()
-                val out = socket.getOutputStream()
+                GlobalScope.launch(Dispatchers.IO) {
+                    val ins = socket.getInputStream()
+                    val out = socket.getOutputStream()
 
-                val request = Request(ins, serverPort, socket.localPort)
-                val response = Response(out)
-                request.parse()
+                    val request = Request(ins, serverPort, socket.localPort)
+                    val response = Response(out)
+                    request.parse()
 
-                dispatcherServlet.doGet(request, response)
+                    dispatcherServlet.doGet(request, response)
 
-                response.flushBuffer()
+                    response.flushBuffer()
 
-                socket.close()
+                    socket.close()
+                }
+
             } catch (ignore: SocketException) {
                 // ignore it
             } catch (ex: Exception) {
                 ex.printStackTrace()
             }
         }
-    }
-
-    override fun setBeanFactory(factory: AbstractBeanFactory) {
-        this.factory = factory
     }
 
     @DestroyMethod

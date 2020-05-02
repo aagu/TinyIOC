@@ -56,7 +56,7 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
                             "/"
                         )
                     mappingRegistry.register(regex, bean, method)
-                    println("Mapped $regex, ${method.returnType} ${method.name}")
+                    println("Mapped $regex, ${method.declaringClass.canonicalName}.${method.name}")
                 }
             }
         } catch (e: Exception) {

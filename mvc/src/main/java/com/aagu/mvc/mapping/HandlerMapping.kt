@@ -1,6 +1,5 @@
-package com.aagu.mvc
+package com.aagu.mvc.mapping
 
-import com.aagu.mvc.method.HandlerMethod
 import javax.servlet.http.HttpServletRequest
 
 interface HandlerMapping {

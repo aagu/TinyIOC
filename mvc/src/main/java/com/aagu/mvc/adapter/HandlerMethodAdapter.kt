@@ -1,9 +1,9 @@
-package com.aagu.mvc.method
+package com.aagu.mvc.adapter
 
-import com.aagu.mvc.HandlerAdapter
-import com.aagu.mvc.ModelAndView
-import com.aagu.mvc.ModelMap
 import com.aagu.mvc.annotation.RequestParam
+import com.aagu.mvc.mapping.HandlerMethod
+import com.aagu.mvc.view.ModelAndView
+import com.aagu.mvc.view.ModelMap
 import java.util.*
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -14,7 +14,40 @@ import kotlin.collections.set
 
 
 class HandlerMethodAdapter : HandlerAdapter {
-    override fun handle(req: HttpServletRequest, resp: HttpServletResponse, handler: HandlerMethod): ModelAndView? {
+    override fun handleMV(req: HttpServletRequest, resp: HttpServletResponse, handler: HandlerMethod): ModelAndView? {
+        val paramValues = resolveParams(req, resp, handler)
+
+        val result: Any = handler.method.invoke(handler.bean, *paramValues)
+
+        val isModelAndView = handler.method.returnType === ModelAndView::class.java
+        return when {
+            result is Void -> {
+                null
+            }
+            isModelAndView -> {
+                result as ModelAndView
+            }
+            result is String -> {
+                val model = ModelAndView()
+                model.model = ModelMap("String", result)
+                model
+            }
+            else -> {
+                null
+            }
+        }
+    }
+
+    override fun handleRest(req: HttpServletRequest, resp: HttpServletResponse, handler: HandlerMethod): Any? {
+        val paramValues = resolveParams(req, resp, handler)
+
+        val result: Any = handler.method.invoke(handler.bean, *paramValues)
+
+        return if (result is Void) null
+            else result
+    }
+
+    private fun resolveParams(req: HttpServletRequest, resp: HttpServletResponse, handler: HandlerMethod): Array<Any?> {
         //把方法的形参列表和request的参数列表所在顺序进行对应
         val paramIndexMapping = HashMap<String, Int>()
 
@@ -70,25 +103,7 @@ class HandlerMethodAdapter : HandlerAdapter {
             paramValues[respIndex] = resp
         }
 
-        val result: Any = handler.method.invoke(handler.bean, *paramValues)
-
-        val isModelAndView = handler.method.returnType === ModelAndView::class.java
-        return when {
-            result is Void -> {
-                null
-            }
-            isModelAndView -> {
-                result as ModelAndView
-            }
-            result is String -> {
-                val model = ModelAndView()
-                model.model = ModelMap("String", result)
-                model
-            }
-            else -> {
-                null
-            }
-        }
+        return paramValues
     }
 
     private fun parseValue(value: String, paramsType: Class<*>): Any? {

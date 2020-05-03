@@ -1,4 +1,4 @@
-package com.aagu.mvc
+package com.aagu.mvc.view
 
 class ModelAndView {
     var view: Any? = null

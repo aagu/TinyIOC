@@ -2,8 +2,11 @@ package com.aagu.mvc
 
 import com.aagu.ioc.annotation.Bean
 import com.aagu.ioc.context.ApplicationContext
-import com.aagu.mvc.method.HandlerMethodAdapter
-import com.aagu.mvc.method.HandlerMethodMapping
+import com.aagu.mvc.adapter.HandlerAdapter
+import com.aagu.mvc.adapter.HandlerMethodAdapter
+import com.aagu.mvc.mapping.HandlerMapping
+import com.aagu.mvc.mapping.HandlerMethodMapping
+import com.aagu.mvc.util.Serializer
 import java.io.IOException
 import java.util.*
 import javax.servlet.ServletConfig
@@ -49,17 +52,22 @@ class DispatcherServlet : HttpServlet() {
         val handler = handlerMapping.getHandler(req)
 
         if (handler == null) {
-            resp.status = 500
+            resp.status = 404
             val msg = "unknown mapping ${req.requestURI}"
             resp.setContentLength(msg.length)
             resp.writer.write(msg)
         } else {
-            val modelAndView = handlerAdaptor.handle(req, resp, handler)
             resp.status = 200
-            val responseBody = if (modelAndView != null) {
-                 modelAndView.model?.values.toString()
+            val responseBody = if (handler.isResponseBody()) {
+                resp.contentType = "text/json"
+                Serializer.getSerializedString(handlerAdaptor.handleRest(req, resp, handler))
             } else {
-                "empty"
+                val modelAndView = handlerAdaptor.handleMV(req, resp, handler)
+                if (modelAndView != null) {
+                    modelAndView.model?.values.toString()
+                } else {
+                    "empty"
+                }
             }
             resp.setContentLength(responseBody.length)
             resp.writer.write(responseBody)

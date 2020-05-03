@@ -8,6 +8,7 @@ import com.aagu.ioc.factory.FactoryPostProcessor
 import com.aagu.ioc.util.PackageScanner
 import com.aagu.ioc.util.StringUtils
 import com.aagu.mvc.annotation.Controller
+import com.aagu.mvc.annotation.RestController
 import java.util.concurrent.ConcurrentHashMap
 
 class MvcRegistry : PackageScanner.Filter, FactoryPostProcessor {
@@ -15,7 +16,8 @@ class MvcRegistry : PackageScanner.Filter, FactoryPostProcessor {
     private lateinit var factory: AbstractBeanFactory
 
     override fun onFilter(clazz: Class<*>) {
-        if (clazz.isAnnotationPresent(Controller::class.java)) {
+        if (clazz.isAnnotationPresent(Controller::class.java) ||
+            clazz.isAnnotationPresent(RestController::class.java)) {
             controllerList.add(clazz)
         }
     }

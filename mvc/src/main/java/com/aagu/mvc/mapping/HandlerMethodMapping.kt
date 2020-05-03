@@ -1,9 +1,10 @@
-package com.aagu.mvc.method
+package com.aagu.mvc.mapping
 
 import com.aagu.ioc.context.ApplicationContext
-import com.aagu.mvc.HandlerMapping
 import com.aagu.mvc.annotation.Controller
 import com.aagu.mvc.annotation.RequestMapping
+import com.aagu.mvc.annotation.ResponseBody
+import com.aagu.mvc.annotation.RestController
 import java.lang.reflect.Method
 import javax.servlet.http.HttpServletRequest
 
@@ -20,7 +21,16 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
 
         url = url.replace(contextPath, "").replace("+/", "/")
 
-        return mappingRegistry.getHandlerMethod(url)
+        val handler = mappingRegistry.getHandlerMethod(url)
+
+        if (handler != null) {
+            if (handler.checkHandleType(req.method)) {
+                return handler
+            } else {
+                println("${req.requestURI} does not support request type ${req.method}")
+            }
+        }
+        return null
     }
 
     private fun initHandleMethod(context: ApplicationContext) {
@@ -31,10 +41,12 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
                 val bean: Any = context.getBean(beanName)
                 val clazz: Class<*> = bean.javaClass
                 //只对加了@Controller注解的类进行初始化
-                if (!clazz.isAnnotationPresent(Controller::class.java)) {
+                if (!(clazz.isAnnotationPresent(Controller::class.java) ||
+                    clazz.isAnnotationPresent(RestController::class.java))) {
                     continue
                 }
                 var baseUrl = ""
+                var isBody = clazz.isAnnotationPresent(RestController::class.java)
                 //获取Controller的url配置
                 if (clazz.isAnnotationPresent(RequestMapping::class.java)) {
                     val requestMapping: RequestMapping = clazz.getAnnotation(RequestMapping::class.java)
@@ -48,14 +60,13 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
                     }
                     //映射URL
                     val requestMapping: RequestMapping = method.getAnnotation(RequestMapping::class.java)
-                    //  /demo/query 字符串处理
-//  (//demo//query)
                     val regex =
                         ("/" + baseUrl + "/" + requestMapping.value.replace("\\*", ".*")).replace(
                             "/+".toRegex(),
                             "/"
                         )
-                    mappingRegistry.register(regex, bean, method)
+                    isBody = isBody or method.isAnnotationPresent(ResponseBody::class.java)
+                    mappingRegistry.register(regex, bean, method, isBody)
                     println("Mapped $regex, ${method.declaringClass.canonicalName}.${method.name}")
                 }
             }
@@ -68,8 +79,8 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
         private val registry: HashMap<String, MappingRegistration<String>> = HashMap()
         private val mappingLookup: HashMap<String, HandlerMethod> = HashMap()
 
-        fun register(mapping: String, handler: Any, method: Method) {
-            val handlerMethod = createHandlerMethod(handler, method)
+        fun register(mapping: String, handler: Any, method: Method, responseBody: Boolean) {
+            val handlerMethod = createHandlerMethod(handler, method, responseBody)
 
             mappingLookup[mapping] = handlerMethod
         }
@@ -78,8 +89,12 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
             return mappingLookup[mappings]
         }
 
-        private fun createHandlerMethod(handler: Any, method: Method): HandlerMethod {
-            return HandlerMethod(handler, method)
+        private fun createHandlerMethod(
+            handler: Any,
+            method: Method,
+            responseBody: Boolean
+        ): HandlerMethod {
+            return HandlerMethod(handler, method, responseBody)
         }
     }
 

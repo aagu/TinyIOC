@@ -52,9 +52,7 @@ class PoolDataSource: DataSource {
     }
 
     override fun isTransactional(): Boolean {
-        val v = transactional.get()
-        if (v != null) return v
-        return false
+        return transactional.get() ?: false
     }
 
     override fun getConnection(): Connection {

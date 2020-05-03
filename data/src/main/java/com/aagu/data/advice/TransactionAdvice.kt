@@ -4,10 +4,10 @@ import com.aagu.aop.advice.ProceedJointPoint
 import com.aagu.aop.annotation.Around
 import com.aagu.aop.annotation.Aspect
 import com.aagu.aop.annotation.Order
-import com.aagu.data.annotation.Transactional
 import com.aagu.data.connection.DataSource
 import com.aagu.data.transaction.TransactionManager
 import com.aagu.data.transaction.support.SimpleTransactionDefinition
+import com.aagu.data.util.TransactionUtils
 import com.aagu.ioc.bean.BeanFactoryAware
 import com.aagu.ioc.factory.AbstractBeanFactory
 import com.aagu.ioc.factory.BeanFactory
@@ -65,17 +65,7 @@ class TransactionAdvice: BeanFactoryAware {
         val method: Method = TransactionAdvice::class.java.getMethod("doTransaction", ProceedJointPoint::class.java)
 
         fun isRollbackOnly(proceedJointPoint: ProceedJointPoint): Boolean {
-            return when {
-                proceedJointPoint.method.isAnnotationPresent(Transactional::class.java) -> {
-                    proceedJointPoint.method.getAnnotation(Transactional::class.java).rollbackOnly
-                }
-                proceedJointPoint.target.javaClass.isAnnotationPresent(Transactional::class.java) -> {
-                    proceedJointPoint.target.javaClass.getAnnotation(Transactional::class.java).rollbackOnly
-                }
-                else -> {
-                    false
-                }
-            }
+            return TransactionUtils.isRollbackOnly(proceedJointPoint.method)
         }
     }
 }

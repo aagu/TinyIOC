@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.IOException
-import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.SocketException
 import kotlin.system.exitProcess
@@ -26,7 +25,7 @@ class HttpServer {
 
     fun run() {
         try {
-            serverSocket = ServerSocket(serverPort, 1, InetAddress.getByName("127.0.0.1"))
+            serverSocket = ServerSocket(serverPort, 128, null)
             println("http server running at port: $serverPort")
         } catch (ex: IOException) {
             ex.printStackTrace()

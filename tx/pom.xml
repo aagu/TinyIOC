@@ -11,5 +11,12 @@
 
     <artifactId>tx</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.aagu.framework</groupId>
+            <artifactId>core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
 </project>

@@ -18,8 +18,8 @@ import kotlin.collections.HashSet
 
 abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
     protected val beanDefinitionMap = ConcurrentHashMap<String, BeanDefinition>(256)
-    private val beanMap = ConcurrentHashMap<String, Any>(256)
-    private val classMap = ConcurrentHashMap<Class<*>, String>(256)
+    protected val beanNameMap = ConcurrentHashMap<String, Any>(256)
+    protected val beanClassMap = ConcurrentHashMap<Class<*>, String>(256)
     private val buildingBeans = ThreadLocal<HashSet<String>>().apply {
         set(HashSet())
     }
@@ -31,10 +31,9 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
     }
 
     override fun <T> getBean(clazz: Class<T>): T {
-        val name = classMap[clazz]
+        val name = beanClassMap[clazz]
         if (StringUtils.isEmpty(name)) {
-            println("could not find bean with name: $name")
-            throw BeanNotFoundException(name)
+            throw BeanNotFoundException("could not find bean instance of: ${clazz.name}")
         }
         else {
             return getBean(name!!)
@@ -60,7 +59,7 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
         beanDefinitionMap[name] = definition
         if (definition.getBeanClass() != null) {
             // 对于@Config定义的bean，只能通过beanName访问
-            classMap[definition.getBeanClass()!!] = name
+            beanClassMap[definition.getBeanClass()!!] = name
         }
     }
 
@@ -80,7 +79,7 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
             val beanDefinition = entry.value
 
             if (beanDefinition.isSingleton() && StringUtils.isNotEmpty(beanDefinition.getDestroyMethodName())) {
-                val instance = beanMap[beanName] ?: continue
+                val instance = beanNameMap[beanName] ?: continue
                 try {
                     val method = instance.javaClass.getMethod(beanDefinition.getDestroyMethodName()!!)
                     method.invoke(instance)
@@ -93,7 +92,7 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
                 } catch (e: InvocationTargetException) {
                     e.printStackTrace()
                 } finally {
-                    beanMap.remove(beanName)
+                    beanNameMap.remove(beanName)
                 }
             }
         }
@@ -117,7 +116,7 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
         if (beanUnderBuilding.contains(name)) throw RuntimeException("循环依赖 $name")
 
         beanUnderBuilding.add(name)
-        var instance = beanMap[name]
+        var instance = beanNameMap[name]
         if (instance != null) {
             beanUnderBuilding.remove(name)
             return instance as T
@@ -150,7 +149,7 @@ abstract class AbstractBeanFactory: BeanFactory, BeanDefinitionRegistry {
         instance = applyPostProcessorAfterInitialization(instance, name)
 
         if (definition.isSingleton()) {
-            beanMap[name] = instance
+            beanNameMap[name] = instance
         }
 
         return instance as T

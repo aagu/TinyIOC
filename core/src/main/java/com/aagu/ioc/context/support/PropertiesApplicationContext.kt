@@ -7,20 +7,11 @@ import com.aagu.ioc.factory.BeanFactory
 import com.aagu.ioc.factory.FactoryPostProcessor
 import com.aagu.ioc.util.PackageScanner
 
-//import com.aagu.mvc.annotation.Controller
-
 class PropertiesApplicationContext(private val packageNames: ArrayList<String>) : AbstractApplicationContext() {
     private var beanFactory: AnnotationBeanFactory = AnnotationBeanFactory(packageNames)
     private val registeredBeanNames = HashSet<String>()
 
     override fun refreshBeanFactory() {
-//        beanFactory.addOnScanFilter(object : PackageScanner.Filter {
-//            override fun onFilter(clazz: Class<*>) {
-//                if (clazz.isAnnotationPresent(Controller::class.java)) {
-//                    BeanUtils.registerBeanDefinition(clazz, this@PropertiesApplicationContext)
-//                }
-//            }
-//        })
         beanFactory.registerBeanPostProcessor(object : BeanPostProcessor {
             override fun postProcessAfterInitialization(beanName: String, bean: Any): Any {
                 registeredBeanNames.add(beanName)
@@ -31,7 +22,7 @@ class PropertiesApplicationContext(private val packageNames: ArrayList<String>) 
     }
 
     override fun getBeanFactory(): BeanFactory {
-        return beanFactory;
+        return beanFactory
     }
 
     override fun <T> getBean(name: String): T {

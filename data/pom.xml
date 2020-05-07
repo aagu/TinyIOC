@@ -14,7 +14,7 @@
     <dependencies>
         <dependency>
             <groupId>com.aagu.framework</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>tx</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

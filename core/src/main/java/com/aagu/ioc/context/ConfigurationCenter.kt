@@ -24,6 +24,10 @@ class ConfigurationCenter(private val context: PropertiesApplicationContext) {
             val configurer = Class.forName(MVC_SUPPORT_CONFIGURER).newInstance() as AutoConfigurer
             autoConfigurers.add(configurer)
         }
+        if (PropertyLoader.getBooleanProperty("enable-tx", true)) {
+            val configurer = Class.forName(TX_SUPPORT_CONFIGURER).newInstance() as AutoConfigurer
+            autoConfigurers.add(configurer)
+        }
     }
 
     fun configureBeforeContextRefresh() {
@@ -57,5 +61,6 @@ class ConfigurationCenter(private val context: PropertiesApplicationContext) {
     companion object {
         const val DATA_SUPPORT_CONFIGURER = "com.aagu.data.DataAutoConfigurer"
         const val MVC_SUPPORT_CONFIGURER = "com.aagu.mvc.MvcAutoConfigurer"
+        const val TX_SUPPORT_CONFIGURER = "com.aagu.tx.TransactionAutoConfigurer"
     }
 }

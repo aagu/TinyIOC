@@ -82,6 +82,7 @@ class AnnotationBeanFactory(private val packageNames: List<String>): AbstractBea
                     val implBeanDefinition = getBeanDefinition(impl[0])
                     val beanName = StringUtils.lowerCaseFirstChar(clazz.simpleName)
                     registerBeanDefinition(beanName, implBeanDefinition)
+                    beanClassMap[clazz] = beanName // also cache the interface class
                 } catch (e: BeanNotFoundException) {
 
                 }

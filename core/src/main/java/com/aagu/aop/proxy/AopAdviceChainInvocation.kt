@@ -1,6 +1,7 @@
 package com.aagu.aop.proxy
 
 import com.aagu.aop.advice.*
+import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 
 class AopAdviceChainInvocation(
@@ -11,6 +12,7 @@ class AopAdviceChainInvocation(
     private val advices: List<AdviceWrapper>
 ) {
     private var index = 0
+    @Throws(Throwable::class)
     fun invoke(): Any? {
         if (index < advices.size) {
             val advice = advices[index++]
@@ -33,7 +35,11 @@ class AopAdviceChainInvocation(
             }
             return this.invoke()
         } else {
-            return method.invoke(target, *args)
+            try {
+                return method.invoke(target, *args)
+            } catch (ex: InvocationTargetException) {
+                throw ex.targetException
+            }
         }
     }
 

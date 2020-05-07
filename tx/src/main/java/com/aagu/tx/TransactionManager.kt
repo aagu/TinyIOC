@@ -1,6 +1,6 @@
-package com.aagu.data.transaction
+package com.aagu.tx
 
-import com.aagu.data.exception.TransactionException
+import com.aagu.tx.exception.TransactionException
 
 interface TransactionManager {
     @Throws(TransactionException::class)

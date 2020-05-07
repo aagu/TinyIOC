@@ -1,6 +1,4 @@
-package com.aagu.data.transaction
-
-import java.sql.Connection
+package com.aagu.tx
 
 interface TransactionDefinition {
     fun getPropagationBehavior(): Int {
@@ -22,8 +20,6 @@ interface TransactionDefinition {
     fun isReadOnly(): Boolean {
         return false
     }
-
-    fun getConnect(): Connection
 
     companion object {
         const val ISOLATION_DEFAULT = -1

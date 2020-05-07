@@ -1,10 +1,10 @@
 # Tiny IOC
-利用尽量少的依赖（目前依赖dom4j，cglib，aspectjweaver）实现一个~~支持AOP的IOC容器~~模仿Spring的框架
+利用尽量少的依赖（目前依赖dom4j，cglib，aspectjweaver）实现一个~~支持AOP的IOC容器~~模仿Spring的框架，功能包括：IOC、AOP、模块化与自动配置、orm、事务、MVC支持（计划中）、web容器支持（计划中）
 
 设计思路参考[手写Spring---IOC容器（1）](https://juejin.im/post/5cb1c9c4e51d456e770bdc9c)
 、[手写Spring---DI依赖注入（2）](https://juejin.im/post/5cb778016fb9a068aa4b971b)、
 [手写Spring---AOP面向切面编程（3）](https://juejin.im/post/5cc01088f265da035c6bc7f8)和[手写Spring---AOP面向切面编程（4）](https://juejin.im/post/5cc83ae5e51d456e7d18a000)
-在此基础上扩展支持基于xml的bean定义和基于注解的bean定义，实现bean的自动化扫描。~~后续将支持AOP织入~~(已支持)。更多功能包括：模块化与自动配置、数据库支持、MVC支持（计划中）、web容器支持（计划中）
+在此基础上扩展支持基于xml的bean定义和基于注解的bean定义，实现bean的自动化扫描。~~后续将支持AOP织入~~(已支持)。
 
 ### IOC容器功能
 

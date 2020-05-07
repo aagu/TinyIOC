@@ -1,11 +1,15 @@
 package com.aagu.data.session
 
-import com.aagu.data.annotation.*
+import com.aagu.data.annotation.Delete
+import com.aagu.data.annotation.Insert
+import com.aagu.data.annotation.Select
+import com.aagu.data.annotation.Update
 import com.aagu.data.connection.DataSource
 import com.aagu.data.proxy.Command
 import com.aagu.data.proxy.RepositoryMethod
 import com.aagu.data.proxy.RepositoryProxyFactory
 import com.aagu.data.util.SqlUtils
+import com.aagu.data.util.TransactionUtils
 import com.aagu.ioc.annotation.Bean
 import com.aagu.ioc.annotation.Wire
 import java.lang.reflect.Method
@@ -68,9 +72,7 @@ class SessionFactory private constructor(){
             }
 
             if (command != null) {
-                if (method.isAnnotationPresent(Transactional::class.java)) {
-                    command.readOnly = (method.getAnnotation(Transactional::class.java) as Transactional).readOnly
-                }
+                command.readOnly = TransactionUtils.isReadOnly(method)
                 proxyFactory.cacheMethod(method, RepositoryMethod(command, this))
             }
         }

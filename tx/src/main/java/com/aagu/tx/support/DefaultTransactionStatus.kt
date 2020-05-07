@@ -1,10 +1,8 @@
-package com.aagu.data.transaction.support
+package com.aagu.tx.support
 
-import com.aagu.data.transaction.TransactionStatus
-import java.sql.Connection
+import com.aagu.tx.TransactionStatus
 
-class DefaultTransactionStatus(
-    val connection: Connection, val newSynchronization: Boolean,
+open class DefaultTransactionStatus(
     val transaction: Any?, val readOnly: Boolean
 ) : TransactionStatus {
     private var rollbackOnly = false
@@ -13,18 +11,6 @@ class DefaultTransactionStatus(
 
     override fun isNewTransaction(): Boolean {
         return isNew
-    }
-
-    fun isNewSynchronization(): Boolean {
-        return this.newSynchronization
-    }
-
-    fun setNotNew() {
-        isNew = false
-    }
-
-    override fun hasSavepoint(): Boolean {
-        return false
     }
 
     override fun setRollbackOnly() {
@@ -39,7 +25,7 @@ class DefaultTransactionStatus(
         return completed
     }
 
-    fun setCompleted() {
+    override fun setCompleted() {
         completed = true
     }
 

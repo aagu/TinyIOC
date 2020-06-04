@@ -5,6 +5,7 @@ import com.aagu.mvc.annotation.Controller
 import com.aagu.mvc.annotation.RequestMapping
 import com.aagu.mvc.annotation.ResponseBody
 import com.aagu.mvc.annotation.RestController
+import com.aagu.mvc.util.Trie
 import java.lang.reflect.Method
 import javax.servlet.http.HttpServletRequest
 
@@ -60,14 +61,16 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
                     }
                     //映射URL
                     val requestMapping: RequestMapping = method.getAnnotation(RequestMapping::class.java)
-                    val regex =
-                        ("/" + baseUrl + "/" + requestMapping.value.replace("\\*", ".*")).replace(
+                    var pattern =
+                        "/$baseUrl/${requestMapping.value}".replace(
                             "/+".toRegex(),
                             "/"
                         )
+                    pattern = pattern.removePrefix("/")
+                    pattern = pattern.removeSuffix("/")
                     isBody = isBody or method.isAnnotationPresent(ResponseBody::class.java)
-                    mappingRegistry.register(regex, bean, method, isBody)
-                    println("Mapped $regex, ${method.declaringClass.canonicalName}.${method.name}")
+                    mappingRegistry.register(pattern, bean, method, isBody)
+                    println("Mapped $pattern, ${method.declaringClass.canonicalName}.${method.name}")
                 }
             }
         } catch (e: Exception) {
@@ -76,17 +79,34 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
     }
 
     class MappingRegistry {
-        private val registry: HashMap<String, MappingRegistration<String>> = HashMap()
-        private val mappingLookup: HashMap<String, HandlerMethod> = HashMap()
+        private val registry: HashMap<String, HandlerMethod> = HashMap()
+        private val mappingLookup: Trie = Trie()
 
         fun register(mapping: String, handler: Any, method: Method, responseBody: Boolean) {
             val handlerMethod = createHandlerMethod(handler, method, responseBody)
 
-            mappingLookup[mapping] = handlerMethod
+            registry[mapping] = handlerMethod
+            mappingLookup.insert(mapping)
         }
 
-        fun getHandlerMethod(mappings: String): HandlerMethod? {
-            return mappingLookup[mappings]
+        fun getHandlerMethod(mapping: String): HandlerMethod? {
+            var pattern = mapping.removePrefix("/")
+            pattern = pattern.removeSuffix("/")
+            val node = mappingLookup.search(pattern)
+            if (node != null) {
+                val handler = registry[node.pattern]
+                if (handler != null) {
+                    val arguments = node.pattern.split("/")
+                    val values = pattern.split("/")
+                    for ((idx, value) in arguments.withIndex()) {
+                        if (value.startsWith(":") || value.startsWith("*")) {
+                            handler.addWildcardValue(value, values[idx])
+                        }
+                    }
+                }
+                return handler
+            }
+            return null
         }
 
         private fun createHandlerMethod(
@@ -96,9 +116,5 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
         ): HandlerMethod {
             return HandlerMethod(handler, method, responseBody)
         }
-    }
-
-    companion object {
-        private data class MappingRegistration<T>(val mapping: T, val handlerMethod: HandlerMethod)
     }
 }

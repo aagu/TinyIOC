@@ -1,5 +1,6 @@
 package com.aagu.mvc.adapter
 
+import com.aagu.mvc.annotation.PathVar
 import com.aagu.mvc.annotation.RequestParam
 import com.aagu.mvc.mapping.HandlerMethod
 import com.aagu.mvc.view.ModelAndView
@@ -56,7 +57,15 @@ class HandlerMethodAdapter : HandlerAdapter {
         for ((idx, param) in methodParams.withIndex()) {
             for (a in param.annotations) {
                 if (a is RequestParam) {
-                    var paramName: String = a.value
+                    var paramName: String = a.name
+                    if ("" == paramName.trim { it <= ' ' }) {
+                        paramName = param.name
+                    }
+                    paramIndexMapping[paramName] = idx
+                    break
+                }
+                if (a is PathVar) {
+                    var paramName: String = a.name
                     if ("" == paramName.trim { it <= ' ' }) {
                         paramName = param.name
                     }
@@ -91,6 +100,17 @@ class HandlerMethodAdapter : HandlerAdapter {
             }
             val index: Int = paramIndexMapping[k]!!
             paramValues[index] = parseValue(value, paramsTypes[index])
+        }
+
+        val pathVarMap = handler.getWildcardValues()
+        if (pathVarMap != null) {
+            for ((k, v) in pathVarMap) {
+                if (!paramIndexMapping.containsKey(k)) {
+                    continue
+                }
+                val index: Int = paramIndexMapping[k]!!
+                paramValues[index] = parseValue(v, paramsTypes[index])
+            }
         }
 
         if (paramIndexMapping.containsKey(HttpServletRequest::class.java.name)) {

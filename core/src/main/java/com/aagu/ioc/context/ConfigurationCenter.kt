@@ -24,7 +24,7 @@ class ConfigurationCenter(private val context: PropertiesApplicationContext) {
             val configurer = Class.forName(MVC_SUPPORT_CONFIGURER).newInstance() as AutoConfigurer
             autoConfigurers.add(configurer)
         }
-        if (PropertyLoader.getBooleanProperty("enable-tx", true)) {
+        if (PropertyLoader.getBooleanProperty("enable-tx", false)) {
             val configurer = Class.forName(TX_SUPPORT_CONFIGURER).newInstance() as AutoConfigurer
             autoConfigurers.add(configurer)
         }

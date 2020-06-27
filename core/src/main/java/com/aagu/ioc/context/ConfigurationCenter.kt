@@ -4,6 +4,7 @@ import com.aagu.aop.advisor.AdvisorManager
 import com.aagu.aop.proxy.AdvisorAutoProxyCreator
 import com.aagu.ioc.context.support.PropertiesApplicationContext
 import com.aagu.ioc.util.PropertyLoader
+import com.aagu.ioc.util.StringUtils
 
 /**
  * 配置中心
@@ -17,15 +18,24 @@ class ConfigurationCenter(private val context: PropertiesApplicationContext) {
             autoConfigurers.add(AopAutoConfigurer())
         }
         if (PropertyLoader.getBooleanProperty("enable-data", false)) {
-            val configurer = Class.forName(DATA_SUPPORT_CONFIGURER).newInstance() as AutoConfigurer
+            val configurer = Class.forName(DATA_SUPPORT_CONFIGURER).getDeclaredConstructor().newInstance() as AutoConfigurer
             autoConfigurers.add(configurer)
         }
-        if (PropertyLoader.getBooleanProperty("enable-web", false)) {
-            val configurer = Class.forName(MVC_SUPPORT_CONFIGURER).newInstance() as AutoConfigurer
+        val webHandler = PropertyLoader.getProperty("webHandler")
+        if (StringUtils.isNotEmpty(webHandler)) {
+            if (webHandler == WEB_FLOW) {
+                val configurer = Class.forName(FLOW_SUPPORT_CONFIGURER).getDeclaredConstructor().newInstance() as AutoConfigurer
+                autoConfigurers.add(configurer)
+            } else if (webHandler == WEB_MVC) {
+                val configurer = Class.forName(MVC_SUPPORT_CONFIGURER).getDeclaredConstructor().newInstance() as AutoConfigurer
+                autoConfigurers.add(configurer)
+            }
+        } else if (PropertyLoader.getBooleanProperty("enable-web", false)) {
+            val configurer = Class.forName(MVC_SUPPORT_CONFIGURER).getDeclaredConstructor().newInstance() as AutoConfigurer
             autoConfigurers.add(configurer)
         }
         if (PropertyLoader.getBooleanProperty("enable-tx", false)) {
-            val configurer = Class.forName(TX_SUPPORT_CONFIGURER).newInstance() as AutoConfigurer
+            val configurer = Class.forName(TX_SUPPORT_CONFIGURER).getDeclaredConstructor().newInstance() as AutoConfigurer
             autoConfigurers.add(configurer)
         }
     }
@@ -62,5 +72,9 @@ class ConfigurationCenter(private val context: PropertiesApplicationContext) {
         const val DATA_SUPPORT_CONFIGURER = "com.aagu.data.DataAutoConfigurer"
         const val MVC_SUPPORT_CONFIGURER = "com.aagu.mvc.MvcAutoConfigurer"
         const val TX_SUPPORT_CONFIGURER = "com.aagu.tx.TransactionAutoConfigurer"
+        const val FLOW_SUPPORT_CONFIGURER = "com.aagu.flow.FlowAutoConfigurer"
+
+        private const val WEB_FLOW = "flow"
+        private const val WEB_MVC = "mvc"
     }
 }

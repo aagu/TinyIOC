@@ -30,7 +30,7 @@ class Trie {
     }
 
     fun insert(pattern: String) {
-        val parts = pattern.split("/")
+        val parts = cut(pattern)
         doInsert(pattern, parts, 0, root)
     }
 
@@ -45,14 +45,14 @@ class Trie {
         if (child == null) {
             child = TrieNode()
             child.part = tmp
-            child.isWildcard = tmp[0] == ':' || tmp[0] == '*'
+            child.isWildcard = tmp.startsWith("/:") || tmp.startsWith("/*")
             currNode.children.add(child)
         }
         doInsert(pattern, parts, height+1, child)
     }
 
     fun search(pattern: String): TrieNode? {
-        val parts = pattern.split("/")
+        val parts = cut(pattern)
         return doSearch(parts, 0, root)
     }
 
@@ -76,14 +76,24 @@ class Trie {
         return null
     }
 
-    private fun removeSlash(string: String): String {
-        var str = string
-        if (str.startsWith("/")) {
-            str = str.substring(1)
+    companion object {
+        fun cut(pattern: String): List<String> {
+            val parts = ArrayList<String>()
+            val builder = StringBuilder()
+            var idx = 0
+            val chars = pattern.toCharArray()
+            while (idx < chars.size ) {
+                if (chars[idx] == '/') {
+                    builder.append('/')
+                    idx++
+                    while (idx < chars.size && chars[idx] != '/') {
+                        builder.append(chars[idx++])
+                    }
+                    parts.add(builder.toString())
+                    builder.setLength(0)
+                }
+            }
+            return parts
         }
-        if (str.endsWith("/")) {
-            str = str.substring(0, str.length - 1)
-        }
-        return str
     }
 }

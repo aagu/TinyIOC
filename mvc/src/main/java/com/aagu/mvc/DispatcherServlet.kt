@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-@Bean
+@Bean("httpServlet")
 class DispatcherServlet : HttpServlet() {
     private lateinit var handlerMapping: HandlerMapping
     private lateinit var handlerAdaptor: HandlerAdapter
@@ -30,7 +30,7 @@ class DispatcherServlet : HttpServlet() {
         handlerAdaptor = HandlerMethodAdapter()
     }
 
-    public override fun doGet(req: HttpServletRequest, resp: HttpServletResponse) {
+    override fun doGet(req: HttpServletRequest, resp: HttpServletResponse) {
         this.doPost(req, resp)
     }
 

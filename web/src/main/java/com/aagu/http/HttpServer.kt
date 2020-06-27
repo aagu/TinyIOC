@@ -4,13 +4,13 @@ import com.aagu.ioc.annotation.Bean
 import com.aagu.ioc.annotation.DestroyMethod
 import com.aagu.ioc.annotation.Value
 import com.aagu.ioc.annotation.Wire
-import com.aagu.mvc.DispatcherServlet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.net.ServerSocket
 import java.net.SocketException
+import javax.servlet.http.HttpServlet
 import kotlin.system.exitProcess
 
 @Bean
@@ -19,7 +19,7 @@ class HttpServer {
 
     @Value("#{serverPort}") private var serverPort:Int = 4567
 
-    @Wire private lateinit var dispatcherServlet:DispatcherServlet
+    @Wire private lateinit var dispatcherServlet:HttpServlet
 
     private lateinit var serverSocket: ServerSocket
 
@@ -43,7 +43,7 @@ class HttpServer {
                     val response = Response(out)
                     request.parse()
 
-                    dispatcherServlet.doGet(request, response)
+                    dispatcherServlet.service(request, response)
 
                     response.flushBuffer()
 

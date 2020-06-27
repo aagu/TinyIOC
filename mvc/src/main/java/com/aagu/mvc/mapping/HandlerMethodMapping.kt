@@ -61,13 +61,11 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
                     }
                     //映射URL
                     val requestMapping: RequestMapping = method.getAnnotation(RequestMapping::class.java)
-                    var pattern =
+                    val pattern =
                         "/$baseUrl/${requestMapping.value}".replace(
                             "/+".toRegex(),
                             "/"
                         )
-                    pattern = pattern.removePrefix("/")
-                    pattern = pattern.removeSuffix("/")
                     isBody = isBody or method.isAnnotationPresent(ResponseBody::class.java)
                     mappingRegistry.register(pattern, bean, method, isBody)
                     println("Mapped $pattern, ${method.declaringClass.canonicalName}.${method.name}")
@@ -90,17 +88,15 @@ class HandlerMethodMapping(context: ApplicationContext) : HandlerMapping {
         }
 
         fun getHandlerMethod(mapping: String): HandlerMethod? {
-            var pattern = mapping.removePrefix("/")
-            pattern = pattern.removeSuffix("/")
-            val node = mappingLookup.search(pattern)
+            val node = mappingLookup.search(mapping)
             if (node != null) {
                 val handler = registry[node.pattern]
                 if (handler != null) {
-                    val arguments = node.pattern.split("/")
-                    val values = pattern.split("/")
+                    val arguments = Trie.cut(node.pattern)
+                    val values = Trie.cut(mapping)
                     for ((idx, value) in arguments.withIndex()) {
-                        if (value.startsWith(":") || value.startsWith("*")) {
-                            handler.addWildcardValue(value, values[idx])
+                        if (value.startsWith("/:")) {
+                            handler.addWildcardValue(value.substring(2), values[idx].substring(1))
                         }
                     }
                 }
